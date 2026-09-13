@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>कलानिधि | एआई-संचालित हस्तशिल्प बाज़ार</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS Client SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Linked CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- हेडर / नेविगेशन -->
+    <header class="navbar">
+        <div class="logo-container">
+            <img src="assets/logo.png.jpeg" alt="कलानिधि लोगो" class="brand-logo-img">
+            <div class="brand-info">
+                <span class="brand-title">कला NIDHI</span>
+                <p class="brand-tagline">"हस्तकला केवल एक कला नहीं, हमारी विरासत और संस्कृति की जीवंत पहचान है।"</p>
+            </div>
+        </div>
+        
+        <nav class="nav-links">
+            <a href="#marketplace" class="nav-item">उत्पाद</a>
+            <a href="#artisans" class="nav-item">कारिगर</a>
+            <a href="#about" class="nav-item">हमारे बारे में</a>
+            
+            <div class="lang-toggle">
+                <form action = "index.html"><button class="lang-btn" id="lang-en">EN</button></form>
+                <button class="lang-btn active" id="lang-hi">हिंदी</button>
+            </div>
+            
+            <!-- ऑथेंटिकेशन बटन -->
+            <div id="authNavButtons">
+                <form action="buyer-login.html" method="GET" style="display: inline-block;">
+                    <button type="submit" class="btn-secondary">लॉग इन करें</button>
+                </form>
+                <form action="buyer-signup.html" method="GET" style="display: inline-block;">
+                    <button type="submit" class="btn-primary">साइन अप करें</button>
+                </form>
+            </div>
+
+            <div id="userProfileNav" class="hidden">
+                <span id="navUserBadge" class="user-badge"></span>
+                <button class="btn-logout" onclick="logoutUser()"><i class="fa-solid fa-right-from-bracket"></i> लॉग आउट</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ऑथेंटिकेशन मॉडल (शिल्पकार और खरीदार पंजीकरण) -->
+    <div class="modal-overlay hidden" id="authModal">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeAuthModal()">&times;</button>
+            
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">लॉग इन</button>
+                <button class="auth-tab" id="tabRegArtisan" onclick="switchAuthTab('regArtisan')">शिल्पकार पंजीकरण</button>
+                <button class="auth-tab" id="tabRegBuyer" onclick="switchAuthTab('regBuyer')">खरीदार पंजीकरण</button>
+            </div>
+
+            <!-- लॉग इन फॉर्म -->
+            <form id="loginForm" class="auth-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>ईमेल पता</label>
+                    <input type="email" id="loginEmail" placeholder="उदा. artisan@kalanidhi.org" required>
+                </div>
+                <div class="form-group">
+                    <label>पासवर्ड</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-submit full-btn">लॉग इन करें</button>
+            </form>
+
+            <!-- शिल्पकार पंजीकरण फॉर्म -->
+            <form id="artisanRegisterForm" class="auth-form hidden" onsubmit="handleArtisanRegister(event)">
+                <div class="auth-role-header">
+                    <i class="fa-solid fa-palette"></i> शिल्पकार (विक्रेता) के रूप में पंजीकरण करें
+                </div>
+                <div class="form-group">
+                    <label>पूरा नाम</label>
+                    <input type="text" id="artisanName" placeholder="उदा. माया दास" required>
+                </div>
+                <div class="form-group">
+                    <label>ईमेल पता</label>
+                    <input type="email" id="artisanEmail" placeholder="उदा. maya@kalanidhi.org" required>
+                </div>
+                <div class="form-group">
+                    <label>पासवर्ड</label>
+                    <input type="password" id="artisanPassword" placeholder="••••••••" required>
+                </div>
+                <div class="form-group">
+                    <label>कला विशेषता</label>
+                    <input type="text" id="artisanSpecialty" placeholder="उदा. टेराकोटा मिट्टी के बर्तन, बनारसी साड़ी" required>
+                </div>
+                <div class="form-group">
+                    <label>राज्य / क्षेत्र</label>
+                    <input type="text" id="artisanLocation" placeholder="उदा. बिष्णुपुर, पश्चिम बंगाल" required>
+                </div>
+                <button type="submit" class="btn-submit full-btn">शिल्पकार खाता बनाएं</button>
+            </form>
+
+            <!-- खरीदार पंजीकरण फॉर्म -->
+            <form id="buyerRegisterForm" class="auth-form hidden" onsubmit="handleBuyerRegister(event)">
+                <div class="auth-role-header buyer-header">
+                    <i class="fa-solid fa-bag-shopping"></i> खरीदार के रूप में पंजीकरण करें
+                </div>
+                <div class="form-group">
+                    <label>पूरा नाम</label>
+                    <input type="text" id="buyerName" placeholder="उदा. राहुल शर्मा" required>
+                </div>
+                <div class="form-group">
+                    <label>ईमेल पता</label>
+                    <input type="email" id="buyerEmail" placeholder="उदा. rahul@gmail.com" required>
+                </div>
+                <div class="form-group">
+                    <label>पासवर्ड</label>
+                    <input type="password" id="buyerPassword" placeholder="••••••••" required>
+                </div>
+                <div class="form-group">
+                    <label>डिलीवरी शहर / राज्य</label>
+                    <input type="text" id="buyerLocation" placeholder="उदा. नई दिल्ली" required>
+                </div>
+                <button type="submit" class="btn-submit full-btn">खरीदार खाता बनाएं</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- मुख्य बैनर (हीरो सेक्शन) -->
+    <section class="hero-section" id="about">
+        <div class="hero-badge">वॉइस-सक्षम माइक्रो-मार्केटप्लेस</div>
+        <h1 class="hero-title">विरासत का संरक्षण।<br>कारिगरी का डिजिटलीकरण।</h1>
+        <p class="hero-subtitle">आवाज़ डिक्टेशन, त्वरित एआई कैटलॉग निर्माण और द्विभाषी ऑडियो-सहायता प्राप्त व्यापार के साथ ग्रामीण कारीगरों को सशक्त बनाना।</p>
+    </section>
+
+    <!-- हमारे कारीगरों से मिलें -->
+    <section class="artisans-section" id="artisans">
+        <div class="artisans-header">
+            <span class="sub-heading">कला के पीछे के लोग</span>
+            <h2>हमारे कारीगरों से मिलें</h2>
+            <p>हर हस्तनिर्मित उत्पाद के पीछे एक व्यक्ति और एक कहानी होती है।</p>
+        </div>
+
+        <div class="artisans-grid" id="artisansGrid">
+            <!-- डाइनैमिक कारिगर कार्ड Supabase DB से यहां लोड होंगे -->
+        </div>
+    </section>
+
+    <!-- शिल्पकार डैशबोर्ड सेक्शन (केवल लॉग-इन किए हुए कारीगरों के लिए) -->
+    <section class="cataloguer-container hidden" id="artisanDashboard">
+        <div class="card cataloguer-card">
+            <div class="card-header">
+                <div>
+                    <h2>स्मार्ट एआई कैटलॉगर <span class="badge-seller">शिल्पकार पोर्टल</span></h2>
+                    <p>बोलें या टाइप करें; हमारा एआई तुरंत आपके उत्पाद की सूची तैयार कर देगा।</p>
+                </div>
+                <div class="db-status">
+                    <span class="status-dot"></span> Supabase डेटाबेस कनेक्टेड
+                </div>
+            </div>
+
+            <form id="productForm" class="cataloguer-form" onsubmit="handlePublishProduct(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="productTitle">उत्पाद का नाम</label>
+                        <div class="input-icon-wrapper">
+                            <input type="text" id="productTitle" placeholder="उदा. हस्तनिर्मित मिट्टी की सुराही" required>
+                            <button type="button" class="voice-btn" title="आवाज़ डिक्टेशन" onclick="simulateVoiceInput('productTitle')">
+                                <i class="fa-solid fa-microphone"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productCategory">श्रेणी</label>
+                        <select id="productCategory" required>
+                            <option value="Pottery & Ceramics">मिट्टी के बर्तन / Pottery & Ceramics</option>
+                            <option value="Textiles">वस्त्र / Textiles</option>
+                            <option value="Bamboo Craft">बांस शिल्प / Bamboo Craft</option>
+                            <option value="Metalwork">धातु शिल्प / Metalwork</option>
+                            <option value="Woodwork">काष्ठ कला / Woodwork</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productPrice">मूल्य (₹)</label>
+                        <input type="number" id="productPrice" placeholder="उदा. 850" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productPhoto">चित्र URL / फोटो</label>
+                        <input type="url" id="productPhoto" placeholder="https://images.unsplash.com/..." required>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="productDescription">उत्पाद का विवरण</label>
+                        <textarea id="productDescription" rows="3" placeholder="अपने शिल्प का वर्णन करें या ऑटो-जनरेट पर क्लिक करें..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="simulateVoiceInput('productDescription')">
+                        <i class="fa-solid fa-microphone"></i> बोलकर लिखें
+                    </button>
+                    <button type="button" class="btn-ai" onclick="generateAIDescription()">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> AI विवरण जनरेट करें
+                    </button>
+                    <button type="submit" class="btn-submit">उत्पाद प्रकाशित करें</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- खरीदार व्यू / बाज़ार सेक्शन -->
+    <section class="marketplace-section" id="marketplace">
+        <div class="marketplace-header">
+            <h2>उत्पादों को एक्सप्लोर करें</h2>
+            <p id="marketplaceSubtitle">उत्पादों और उन्हें बनाने वाले कारीगरों की खोज करें।</p>
+            
+            <div class="filter-bar">
+                <div class="search-input-wrapper">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchInput" placeholder="उत्पाद खोजें..." onkeyup="filterProducts()">
+                </div>
+                <div class="category-select-wrapper">
+                    <select id="categoryFilter" onchange="filterProducts()">
+                        <option value="All">सभी श्रेणियां</option>
+                        <option value="Pottery & Ceramics">मिट्टी के बर्तन</option>
+                        <option value="Textiles">कपड़े व वस्त्र</option>
+                        <option value="Bamboo Craft">बांस शिल्प</option>
+                        <option value="Metalwork">धातु कला</option>
+                        <option value="Woodwork">लकड़ी का काम</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- डाइनैमिक उत्पाद ग्रिड -->
+        <div class="product-grid" id="productGrid"></div>
+    </section>
+
+    <!-- फुटर -->
+    <footer>
+        <p>&copy; 2026 कलानिधि। स्मार्ट इंडिया हैकाथॉन (SIH 2026) के लिए निर्मित।</p>
+    </footer>
+
+    <!-- Linked JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
