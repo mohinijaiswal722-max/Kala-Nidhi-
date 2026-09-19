@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buyer Sign Up | KalaNidhi</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS Client SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Linked CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-page-body">
+
+    <div class="auth-page-container">
+        <!-- Header Brand Info -->
+        <div class="auth-page-header">
+            <a href="index.html" class="auth-brand">
+                <img src="assets/logo.png.jpeg" alt="KalaNidhi Logo" class="brand-logo-img">
+                <span class="brand-title">कला NIDHI</span>
+            </a>
+            <h2>Create Buyer Account</h2>
+            <p>Join to support authentic rural artisans and purchase handcrafted goods.</p>
+        </div>
+
+        <!-- Role Badge Header -->
+        <div class="auth-role-header buyer-header" style="text-align: center; margin-bottom: 20px; color: #d97706; font-weight: 600;">
+            <i class="fa-solid fa-bag-shopping"></i> Registering as a Buyer
+        </div>
+
+        <!-- Buyer Registration Form -->
+        <form id="buyerRegisterForm" action="index.html" method="GET" class="auth-form" onsubmit="handleBuyerRegister(event)">
+            <div class="form-group">
+                <label for="buyerName">FULL NAME</label>
+                <input type="text" id="buyerName" name="name" placeholder="e.g. Rahul Sharma" required>
+            </div>
+
+            <div class="form-group">
+                <label for="buyerEmail">EMAIL ADDRESS</label>
+                <input type="email" id="buyerEmail" name="email" placeholder="e.g. rahul@gmail.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="buyerPassword">PASSWORD</label>
+                <input type="password" id="buyerPassword" name="password" placeholder="••••••••" required>
+            </div>
+
+            <div class="form-group">
+                <label for="buyerLocation">DELIVERY CITY / STATE</label>
+                <input type="text" id="buyerLocation" name="location" placeholder="e.g. New Delhi" required>
+            </div>
+
+            <button type="submit" class="btn-submit full-btn">Create Buyer Account</button>
+        </form>
+
+        <!-- Page Footer Navigation -->
+        <div class="auth-page-footer">
+            <p>Already have an account? <a href="login.html">Log In here</a></p>
+            <p>Are you an Artisan? <a href="signup.html">Register as an Artisan</a></p>
+            <p style="margin-top: 12px;"><a href="index.html"><i class="fa-solid fa-arrow-left"></i> Back to Home</a></p>
+        </div>
+    </div>
+
+    <!-- Linked JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>

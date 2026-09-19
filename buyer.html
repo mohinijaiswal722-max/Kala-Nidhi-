@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buyer Login | KalaNidhi</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS Client SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Linked CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-page-body">
+
+    <div class="auth-page-container">
+        <!-- Header Brand Info -->
+        <div class="auth-page-header">
+            <a href="index.html" class="auth-brand">
+                <img src="assets/logo.png.jpeg" alt="KalaNidhi Logo" class="brand-logo-img">
+                <span class="brand-title">कला NIDHI</span>
+            </a>
+            <h2>Buyer Sign In</h2>
+            <p>Log in to discover authentic handmade crafts directly from rural artisans.</p>
+        </div>
+
+        <!-- Role Indicator Badge -->
+        <div class="auth-role-header buyer-header" style="text-align: center; margin-bottom: 20px; color: #d97706; font-weight: 600;">
+            <i class="fa-solid fa-bag-shopping"></i> Logging in as a Buyer
+        </div>
+
+        <!-- Buyer Login Form -->
+        <form id="buyerLoginForm" action="index.html" method="GET" class="auth-form" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label for="buyerLoginEmail">EMAIL ADDRESS</label>
+                <input type="email" id="buyerLoginEmail" name="email" placeholder="e.g. rahul@gmail.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="buyerLoginPassword">PASSWORD</label>
+                <input type="password" id="buyerLoginPassword" name="password" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn-submit full-btn">Log In as Buyer</button>
+        </form>
+
+        <!-- Page Footer Navigation -->
+        <div class="auth-page-footer">
+            <p>Don't have a buyer account? <a href="buyer-signup.html">Sign Up here</a></p>
+            <p>Are you an Artisan? <a href="login.html">Artisan Login</a></p>
+            <p style="margin-top: 12px;"><a href="index.html"><i class="fa-solid fa-arrow-left"></i> Back to Home</a></p>
+        </div>
+    </div>
+
+    <!-- Linked JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KalaNidhi | AI-Powered Artisan Marketplace</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS Client SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Linked CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header / Navigation -->
+    <header class="navbar">
+        <div class="logo-container">
+            <img src="assets/logo.png.jpeg" alt="KalaNidhi Logo" class="brand-logo-img">
+            <div class="brand-info">
+                <span class="brand-title">कला NIDHI </span>
+                <p class="brand-tagline">"हस्तकला केवल एक कला नहीं, हमारी विरासत और संस्कृति की जीवंत पहचान है।"</p>
+            </div>
+        </div>
+        
+        <nav class="nav-links">
+            <a href="#marketplace" class="nav-item">Products</a>
+            <a href="#artisans" class="nav-item">Artisans</a>
+            <a href="#about" class="nav-item">About</a>
+            
+            <div class="lang-toggle">
+                <button class="lang-btn active" id="lang-en">EN</button>
+                <form action="indexhindi.html"><button class="lang-btn" id="lang-hi">हिंदी</button></form>
+            </div>
+            
+            <!-- Auth Buttons -->
+            
+                <form id="authNavButtons" action="login.html" method="get" >
+    <button type="submit" class="btn-secondary">Log In</button>
+
+                
+                
+</form>
+<form id="authNavButtons" action="signup.html" method="GET">
+
+                
+                <button action="assets/signup.html" class="btn-primary" onclick="openAuthModal('register')">Sign Up</button>
+</form>
+
+            <div id="userProfileNav" class="hidden">
+                <span id="navUserBadge" class="user-badge"></span>
+                <button class="btn-logout" onclick="logoutUser()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- AUTH MODAL (SEPARATE ARTISAN & BUYER REGISTRATION) -->
+    <div class="modal-overlay hidden" id="authModal">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeAuthModal()">&times;</button>
+            
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Login</button>
+                <button class="auth-tab" id="tabRegArtisan" onclick="switchAuthTab('regArtisan')">Artisan Register</button>
+                <button class="auth-tab" id="tabRegBuyer" onclick="switchAuthTab('regBuyer')">Buyer Register</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>EMAIL ADDRESS</label>
+                    <input type="email" id="loginEmail" placeholder="e.g. artisan@kalanidhi.org" required>
+                </div>
+                <div class="form-group">
+                    <label>PASSWORD</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-submit full-btn">Log In</button>
+            </form>
+
+            <!-- Dedicated Artisan Registration Form -->
+            <form id="artisanRegisterForm" class="auth-form hidden" onsubmit="handleArtisanRegister(event)">
+                <div class="auth-role-header">
+                    <i class="fa-solid fa-palette"></i> Register as an Artisan (Seller)
+                </div>
+                <div class="form-group">
+                    <label>FULL NAME</label>
+                    <input type="text" id="artisanName" placeholder="e.g. Maya Das" required>
+                </div>
+                <div class="form-group">
+                    <label>EMAIL ADDRESS</label>
+                    <input type="email" id="artisanEmail" placeholder="e.g. maya@kalanidhi.org" required>
+                </div>
+                <div class="form-group">
+                    <label>PASSWORD</label>
+                    <input type="password" id="artisanPassword" placeholder="••••••••" required>
+                </div>
+                <div class="form-group">
+                    <label>CRAFT SPECIALTY</label>
+                    <input type="text" id="artisanSpecialty" placeholder="e.g. Terracotta Pottery, Banarasi Silk" required>
+                </div>
+                <div class="form-group">
+                    <label>STATE / REGION</label>
+                    <input type="text" id="artisanLocation" placeholder="e.g. Bishnupur, West Bengal" required>
+                </div>
+                <button type="submit" class="btn-submit full-btn">Create Artisan Account</button>
+            </form>
+
+            <!-- Dedicated Buyer Registration Form -->
+            <form id="buyerRegisterForm" class="auth-form hidden" onsubmit="handleBuyerRegister(event)">
+                <div class="auth-role-header buyer-header">
+                    <i class="fa-solid fa-bag-shopping"></i> Register as a Buyer
+                </div>
+                <div class="form-group">
+                    <label>FULL NAME</label>
+                    <input type="text" id="buyerName" placeholder="e.g. Rahul Sharma" required>
+                </div>
+                <div class="form-group">
+                    <label>EMAIL ADDRESS</label>
+                    <input type="email" id="buyerEmail" placeholder="e.g. rahul@gmail.com" required>
+                </div>
+                <div class="form-group">
+                    <label>PASSWORD</label>
+                    <input type="password" id="buyerPassword" placeholder="••••••••" required>
+                </div>
+                <div class="form-group">
+                    <label>DELIVERY CITY / STATE</label>
+                    <input type="text" id="buyerLocation" placeholder="e.g. New Delhi" required>
+                </div>
+                <button type="submit" class="btn-submit full-btn">Create Buyer Account</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero-section" id="about">
+        <div class="hero-badge">VOICE-ENABLED MICRO-MARKETPLACE</div>
+        <h1 class="hero-title">Preserving Heritage.<br>Digitizing Craftsmanship.</h1>
+        <p class="hero-subtitle">Empowering rural artisans with voice dictation, instant AI catalog generation, and bilingual audio-assisted commerce.</p>
+    </section>
+
+    <!-- MEET OUR ARTISANS (ARTISANS AT WORK SECTION) -->
+    <section class="artisans-section" id="artisans">
+        <div class="artisans-header">
+            <span class="sub-heading">THE PEOPLE BEHIND THE CRAFT</span>
+            <h2>Meet Our Artisans</h2>
+            <p>Every handmade product has a person and a story behind it.</p>
+        </div>
+
+        <div class="artisans-grid" id="artisansGrid">
+            <!-- Dynamic Artisan Cards populate here from Supabase DB -->
+        </div>
+    </section>
+
+    <!-- ARTISAN DASHBOARD SECTION (Visible to Logged-in Artisans) -->
+    <section class="cataloguer-container hidden " id="artisanDashboard">
+        <div class="card cataloguer-card">
+            <div class="card-header">
+                <div>
+                    <h2>Smart AI Cataloguer <span class="badge-seller">Artisan Portal</span></h2>
+                    <p>Speak or type details; our AI generates optimized listings instantly.</p>
+                </div>
+               
+            </div>
+
+            <form id="productForm" class="cataloguer-form" onsubmit="handlePublishProduct(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="productTitle">PRODUCT TITLE</label>
+                        <div class="input-icon-wrapper">
+                            <input type="text" id="productTitle" placeholder="e.g. Handcrafted Clay Surahi" required>
+                            <button type="button" class="voice-btn" title="Voice Dictation" onclick="simulateVoiceInput('productTitle')">
+                                <i class="fa-solid fa-microphone"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productCategory">CATEGORY</label>
+                        <select id="productCategory" required>
+                            <option value="Pottery & Ceramics">Pottery & Ceramics / मिट्टी के बर्तन</option>
+                            <option value="Textiles">Textiles / वस्त्र</option>
+                            <option value="Bamboo Craft">Bamboo Craft / बांस शिल्प</option>
+                            <option value="Metalwork">Metalwork / धातु शिल्प</option>
+                            <option value="Woodwork">Woodwork / काष्ठ कला</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productPrice">PRICE (₹)</label>
+                        <input type="number" id="productPrice" placeholder="e.g. 850" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productPhoto">IMAGE URL / PHOTO</label>
+                        <input type="url" id="productPhoto" placeholder="https://images.unsplash.com/..." required>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="productDescription">PRODUCT DESCRIPTION</label>
+                        <textarea id="productDescription" rows="3" placeholder="Describe your artifact or click Auto-Generate..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="simulateVoiceInput('productDescription')">
+                        <i class="fa-solid fa-microphone"></i> Dictate
+                    </button>
+                    <button type="button" class="btn-ai" onclick="generateAIDescription()">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Generate AI Description
+                    </button>
+                    <button type="submit" class="btn-submit">Publish Listing</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- BUYER VIEW / MARKETPLACE SECTION -->
+    <section class="marketplace-section" id="marketplace">
+        <div class="marketplace-header">
+            <h2>Explore Products</h2>
+            <p id="marketplaceSubtitle">Discover products and the artisans who create them.</p>
+            
+            <div class="filter-bar">
+                <div class="search-input-wrapper">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchInput" placeholder="Search products..." onkeyup="filterProducts()">
+                </div>
+                <div class="category-select-wrapper">
+                    <select id="categoryFilter" onchange="filterProducts()">
+                        <option value="All">All Categories</option>
+                        <option value="Pottery & Ceramics">Pottery & Ceramics</option>
+                        <option value="Textiles">Textiles</option>
+                        <option value="Bamboo Craft">Bamboo Craft</option>
+                        <option value="Metalwork">Metalwork</option>
+                        <option value="Woodwork">Woodwork</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dynamic Product Grid -->
+        <div class="product-grid" id="productGrid"></div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 KalaNidhi. Built for Smart India Hackathon (SIH 2026).</p>
+    </footer>
+
+    <!-- Linked JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>

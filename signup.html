@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | KalaNidhi</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS Client SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Linked CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-page-body">
+
+    <div class="auth-page-container">
+        <!-- Header Brand Info -->
+        <div class="auth-page-header">
+            <a href="index.html" class="auth-brand">
+                <img src="assets/logo.png.jpeg" alt="KalaNidhi Logo" class="brand-logo-img">
+                <span class="brand-title">कला NIDHI</span>
+            </a>
+            <h2>Join Our Community</h2>
+            <p>Choose your role to get started</p>
+        </div>
+
+        <!-- Role Selector Tabs -->
+        <div class="auth-tabs">
+            <button class="auth-tab active" id="tabRegArtisan" onclick="switchAuthTab('regArtisan')">
+                <i class="fa-solid fa-palette"></i> Artisan (Seller)
+            </button>
+            <form action ="buyer.html"> <button class="auth-tab" id="tabRegBuyer" onclick="switchAuthTab('regBuyer')">
+                <i class="fa-solid fa-bag-shopping"></i> Buyer
+            </button></form>
+           
+        </div>
+
+        <!-- Artisan Registration Form -->
+        <form id="artisanRegisterForm" class="auth-form" onsubmit="handleArtisanRegister(event)">
+            <div class="form-group">
+                <label for="artisanName">FULL NAME</label>
+                <input type="text" id="artisanName" placeholder="e.g. Maya Das" required>
+            </div>
+            <div class="form-group">
+                <label for="artisanEmail">EMAIL ADDRESS</label>
+                <input type="email" id="artisanEmail" placeholder="e.g. maya@kalanidhi.org" required>
+            </div>
+            <div class="form-group">
+                <label for="artisanPassword">PASSWORD</label>
+                <input type="password" id="artisanPassword" placeholder="••••••••" required>
+            </div>
+            <div class="form-group">
+                <label for="artisanSpecialty">CRAFT SPECIALTY</label>
+                <input type="text" id="artisanSpecialty" placeholder="e.g. Terracotta Pottery, Banarasi Silk" required>
+            </div>
+            <div class="form-group">
+                <label for="artisanLocation">STATE / REGION</label>
+                <input type="text" id="artisanLocation" placeholder="e.g. Bishnupur, West Bengal" required>
+            </div>
+            <button type="submit" class="btn-submit full-btn">Create Artisan Account</button>
+        </form>
+
+        <!-- Buyer Registration Form -->
+        <form id="buyerRegisterForm" class="auth-form hidden" onsubmit="handleBuyerRegister(event)">
+            <div class="form-group">
+                <label for="buyerName">FULL NAME</label>
+                <input type="text" id="buyerName" placeholder="e.g. Rahul Sharma" required>
+            </div>
+            <div class="form-group">
+                <label for="buyerEmail">EMAIL ADDRESS</label>
+                <input type="email" id="buyerEmail" placeholder="e.g. rahul@gmail.com" required>
+            </div>
+            <div class="form-group">
+                <label for="buyerPassword">PASSWORD</label>
+                <input type="password" id="buyerPassword" placeholder="••••••••" required>
+            </div>
+            <div class="form-group">
+                <label for="buyerLocation">DELIVERY CITY / STATE</label>
+                <input type="text" id="buyerLocation" placeholder="e.g. New Delhi" required>
+            </div>
+            <button type="submit" class="btn-submit full-btn">Create Buyer Account</button>
+        </form>
+
+        <!-- Redirect to Login -->
+        <div class="auth-page-footer">
+            <p>Already have an account? <a href="login.html">Log In here</a></p>
+            <p><a href="index.html"><i class="fa-solid fa-arrow-left"></i> Back to Home</a></p>
+        </div>
+    </div>
+
+    <!-- Linked JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
