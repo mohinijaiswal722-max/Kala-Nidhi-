@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>साइन अप | कला NIDHI</title>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+	<link rel="stylesheet" href="style.css">
+	<script src="script.js"></script>
+</head>
+<body class="auth-page-body">
+	<div class="auth-page-container">
+		<div class="auth-page-header">
+			<a href="indexhindi.html" class="auth-brand">
+				<img src="assets/logo.png.jpeg" alt="कला NIDHI लोगो" class="brand-logo-img">
+				<span class="brand-title">कला NIDHI</span>
+			</a>
+			<h2>हमारे समुदाय से जुड़ें</h2>
+			<p>शुरू करने के लिए अपनी भूमिका चुनें</p>
+		</div>
+
+		<div class="auth-tabs">
+			<button type="button" class="auth-tab active" id="tabRegArtisan" onclick="switchAuthTab('regArtisan')">
+				<i class="fa-solid fa-palette"></i> शिल्पकार
+			</button>
+			<button type="button" class="auth-tab" id="tabRegBuyer" onclick="switchAuthTab('regBuyer')">
+				<i class="fa-solid fa-bag-shopping"></i> खरीदार
+			</button>
+		</div>
+
+		<form id="artisanRegisterForm" class="auth-form" onsubmit="handleArtisanRegister(event)">
+			<div class="form-group">
+				<label for="artisanName">पूरा नाम</label>
+				<input type="text" id="artisanName" placeholder="उदा. माया दास" required>
+			</div>
+			<div class="form-group">
+				<label for="artisanEmail">ईमेल पता</label>
+				<input type="email" id="artisanEmail" placeholder="उदा. maya@kalanidhi.org" required>
+			</div>
+			<div class="form-group">
+				<label for="artisanPassword">पासवर्ड</label>
+				<input type="password" id="artisanPassword" placeholder="••••••••" required>
+			</div>
+			<div class="form-group">
+				<label for="artisanSpecialty">कला विशेषता</label>
+				<input type="text" id="artisanSpecialty" placeholder="उदा. टेराकोटा मिट्टी के बर्तन" required>
+			</div>
+			<div class="form-group">
+				<label for="artisanLocation">राज्य / क्षेत्र</label>
+				<input type="text" id="artisanLocation" placeholder="उदा. वाराणसी, उत्तर प्रदेश" required>
+			</div>
+			<div class="form-group">
+				<label for="artisanImageFile">प्रोफ़ाइल चित्र</label>
+				<input type="file" id="artisanImageFile" accept="image/png,image/jpeg,image/webp" required>
+				<button type="button" class="camera-button" onclick="openCamera('artisanImageFile')"><i class="fa-solid fa-camera"></i> फोटो लें</button>
+				<small class="field-help">स्पष्ट चित्र चुनें या कैमरे से फोटो लें। अधिकतम 5 MB।</small>
+			</div>
+			<div class="form-group">
+				<label for="artisanStory">आपकी कहानी</label>
+				<textarea id="artisanStory" rows="3" placeholder="अपने शिल्प की यात्रा के बारे में बताएं" required></textarea>
+			</div>
+			<button type="submit" class="btn-submit full-btn">शिल्पकार खाता बनाएं</button>
+		</form>
+
+		<form id="buyerRegisterForm" class="auth-form hidden" onsubmit="handleBuyerRegister(event)">
+			<div class="form-group">
+				<label for="buyerName">पूरा नाम</label>
+				<input type="text" id="buyerName" placeholder="उदा. राहुल शर्मा" required>
+			</div>
+			<div class="form-group">
+				<label for="buyerEmail">ईमेल पता</label>
+				<input type="email" id="buyerEmail" placeholder="उदा. rahul@gmail.com" required>
+			</div>
+			<div class="form-group">
+				<label for="buyerPassword">पासवर्ड</label>
+				<input type="password" id="buyerPassword" placeholder="••••••••" required>
+			</div>
+			<div class="form-group">
+				<label for="buyerLocation">डिलीवरी शहर / राज्य</label>
+				<input type="text" id="buyerLocation" placeholder="उदा. नई दिल्ली" required>
+			</div>
+			<button type="submit" class="btn-submit full-btn">खरीदार खाता बनाएं</button>
+		</form>
+
+		<div class="auth-page-footer">
+			<p>पहले से खाता है? <a href="login_hindi.html">लॉग इन करें</a></p>
+			<p><a href="indexhindi.html"><i class="fa-solid fa-arrow-left"></i> होम पर वापस जाएं</a></p>
+		</div>
+	</div>
+</body>
+</html>

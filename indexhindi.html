@@ -12,6 +12,9 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Linked CSS -->
     <link rel="stylesheet" href="style.css">
+    <!-- Linked JavaScript -->
+    <script src="script.js"></script>
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
 <body>
 
@@ -34,13 +37,33 @@
                 <form action = "index.html"><button class="lang-btn" id="lang-en">EN</button></form>
                 <button class="lang-btn active" id="lang-hi">हिंदी</button>
             </div>
+            <div class="language-picker">
+                <button type="button" class="language-picker-button" id="languageMenuButton" onclick="toggleLanguageMenu()" aria-expanded="false" aria-controls="languageMenu">
+                    <i class="fa-solid fa-language"></i> भाषाएं
+                </button>
+                <div class="language-menu" id="languageMenu">
+                    <button type="button" onclick="changeLanguage('en')">English</button>
+                    <button type="button" onclick="changeLanguage('hi')">हिंदी</button>
+                    <button type="button" onclick="changeLanguage('bn')">বাংলা</button>
+                    <button type="button" onclick="changeLanguage('gu')">ગુજરાતી</button>
+                    <button type="button" onclick="changeLanguage('mr')">मराठी</button>
+                    <button type="button" onclick="changeLanguage('ta')">தமிழ்</button>
+                    <button type="button" onclick="changeLanguage('te')">తెలుగు</button>
+                    <button type="button" onclick="changeLanguage('kn')">ಕನ್ನಡ</button>
+                    <button type="button" onclick="changeLanguage('ml')">മലയാളം</button>
+                    <button type="button" onclick="changeLanguage('pa')">ਪੰਜਾਬੀ</button>
+                    <button type="button" onclick="changeLanguage('or')">ଓଡ଼ିଆ</button>
+                    <button type="button" onclick="changeLanguage('ur')">اردو</button>
+                </div>
+            </div>
+            <div id="google_translate_element" class="google-translate-widget"></div>
             
             <!-- ऑथेंटिकेशन बटन -->
             <div id="authNavButtons">
-                <form action="buyer-login.html" method="GET" style="display: inline-block;">
+                <form action="login_hindi.html" method="GET" style="display: inline-block;">
                     <button type="submit" class="btn-secondary">लॉग इन करें</button>
                 </form>
-                <form action="buyer-signup.html" method="GET" style="display: inline-block;">
+                <form action="signup_hindi.html" method="GET" style="display: inline-block;">
                     <button type="submit" class="btn-primary">साइन अप करें</button>
                 </form>
             </div>
@@ -137,19 +160,6 @@
         <p class="hero-subtitle">आवाज़ डिक्टेशन, त्वरित एआई कैटलॉग निर्माण और द्विभाषी ऑडियो-सहायता प्राप्त व्यापार के साथ ग्रामीण कारीगरों को सशक्त बनाना।</p>
     </section>
 
-    <!-- हमारे कारीगरों से मिलें -->
-    <section class="artisans-section" id="artisans">
-        <div class="artisans-header">
-            <span class="sub-heading">कला के पीछे के लोग</span>
-            <h2>हमारे कारीगरों से मिलें</h2>
-            <p>हर हस्तनिर्मित उत्पाद के पीछे एक व्यक्ति और एक कहानी होती है।</p>
-        </div>
-
-        <div class="artisans-grid" id="artisansGrid">
-            <!-- डाइनैमिक कारिगर कार्ड Supabase DB से यहां लोड होंगे -->
-        </div>
-    </section>
-
     <!-- शिल्पकार डैशबोर्ड सेक्शन (केवल लॉग-इन किए हुए कारीगरों के लिए) -->
     <section class="cataloguer-container hidden" id="artisanDashboard">
         <div class="card cataloguer-card">
@@ -192,8 +202,10 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="productPhoto">चित्र URL / फोटो</label>
-                        <input type="url" id="productPhoto" placeholder="https://images.unsplash.com/..." required>
+                        <label for="productPhoto">उत्पाद के चित्र</label>
+                        <input type="file" id="productPhoto" accept="image/png,image/jpeg,image/webp" multiple required>
+                        <button type="button" class="camera-button" onclick="openCamera('productPhoto')"><i class="fa-solid fa-camera"></i> फोटो लें</button>
+                        <small class="field-help">अधिकतम 6 चित्र चुनें या कैमरे से फोटो लें। प्रत्येक चित्र 5 MB तक।</small>
                     </div>
 
                     <div class="form-group full-width">
@@ -225,6 +237,9 @@
                 <div class="search-input-wrapper">
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <input type="text" id="searchInput" placeholder="उत्पाद खोजें..." onkeyup="filterProducts()">
+                    <button type="button" class="search-voice-button" id="searchVoiceButton" title="आवाज़ से खोजें" aria-label="आवाज़ से खोजें" onclick="startVoiceSearch()">
+                        <i class="fa-solid fa-microphone"></i>
+                    </button>
                 </div>
                 <div class="category-select-wrapper">
                     <select id="categoryFilter" onchange="filterProducts()">
@@ -243,12 +258,46 @@
         <div class="product-grid" id="productGrid"></div>
     </section>
 
+    <!-- खरीदार की खरीदारी -->
+    <section class="buyer-area hidden" id="buyerArea">
+        <div class="buyer-area-header">
+            <h2>आपकी खरीदारी</h2>
+            <p>अपनी पसंदीदा वस्तुएं, कार्ट और ऑर्डर की स्थिति देखें।</p>
+        </div>
+        <div class="buyer-area-grid">
+            <div class="buyer-panel">
+                <h3><i class="fa-solid fa-heart"></i> पसंदीदा सूची</h3>
+                <div id="wishlistItems"><p class="empty-state">पसंदीदा वस्तुएं देखने के लिए लॉग इन करें।</p></div>
+            </div>
+            <div class="buyer-panel">
+                <h3><i class="fa-solid fa-cart-shopping"></i> कार्ट</h3>
+                <div id="cartItems"><p class="empty-state">आपकी कार्ट खाली है।</p></div>
+            </div>
+            <div class="buyer-panel">
+                <h3><i class="fa-solid fa-box"></i> ऑर्डर</h3>
+                <div id="orderItems"><p class="empty-state">अभी कोई ऑर्डर नहीं है।</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- हमारे कारीगरों से मिलें -->
+    <section class="artisans-section" id="artisans">
+        <div class="artisans-header">
+            <span class="sub-heading">कला के पीछे के लोग</span>
+            <h2>हमारे कारीगरों से मिलें</h2>
+            <p>हर हस्तनिर्मित उत्पाद के पीछे एक व्यक्ति और एक कहानी होती है।</p>
+        </div>
+
+        <div class="artisans-grid" id="artisansGrid">
+            <!-- डाइनैमिक कारिगर कार्ड Supabase DB से यहां लोड होंगे -->
+        </div>
+    </section>
+
     <!-- फुटर -->
     <footer>
         <p>&copy; 2026 कलानिधि। स्मार्ट इंडिया हैकाथॉन (SIH 2026) के लिए निर्मित।</p>
     </footer>
 
-    <!-- Linked JavaScript -->
-    <script src="script.js"></script>
+    
 </body>
 </html>

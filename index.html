@@ -12,6 +12,9 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Linked CSS -->
     <link rel="stylesheet" href="style.css">
+    <!-- Linked JavaScript -->
+    <script src="script.js"></script>
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
 <body>
 
@@ -34,20 +37,36 @@
                 <button class="lang-btn active" id="lang-en">EN</button>
                 <form action="indexhindi.html"><button class="lang-btn" id="lang-hi">हिंदी</button></form>
             </div>
+            <div class="language-picker">
+                <button type="button" class="language-picker-button" id="languageMenuButton" onclick="toggleLanguageMenu()" aria-expanded="false" aria-controls="languageMenu">
+                    <i class="fa-solid fa-language"></i> Languages
+                </button>
+                <div class="language-menu" id="languageMenu">
+                    <button type="button" onclick="changeLanguage('en')">English</button>
+                    <button type="button" onclick="changeLanguage('hi')">हिंदी</button>
+                    <button type="button" onclick="changeLanguage('bn')">বাংলা</button>
+                    <button type="button" onclick="changeLanguage('gu')">ગુજરાતી</button>
+                    <button type="button" onclick="changeLanguage('mr')">मराठी</button>
+                    <button type="button" onclick="changeLanguage('ta')">தமிழ்</button>
+                    <button type="button" onclick="changeLanguage('te')">తెలుగు</button>
+                    <button type="button" onclick="changeLanguage('kn')">ಕನ್ನಡ</button>
+                    <button type="button" onclick="changeLanguage('ml')">മലയാളം</button>
+                    <button type="button" onclick="changeLanguage('pa')">ਪੰਜਾਬੀ</button>
+                    <button type="button" onclick="changeLanguage('or')">ଓଡ଼ିଆ</button>
+                    <button type="button" onclick="changeLanguage('ur')">اردو</button>
+                </div>
+            </div>
+            <div id="google_translate_element" class="google-translate-widget"></div>
             
             <!-- Auth Buttons -->
-            
-                <form id="authNavButtons" action="login.html" method="get" >
-    <button type="submit" class="btn-secondary">Log In</button>
-
-                
-                
-</form>
-<form id="authNavButtons" action="signup.html" method="GET">
-
-                
-                <button action="assets/signup.html" class="btn-primary" onclick="openAuthModal('register')">Sign Up</button>
-</form>
+            <div id="authNavButtons">
+                <form id="loginNavButton" action="login.html" method="get">
+                    <button type="submit" class="btn-secondary">Log In</button>
+                </form>
+                <form id="signupNavButton" action="signup.html" method="GET">
+                    <button type="submit" class="btn-primary">Sign Up</button>
+                </form>
+            </div>
 
             <div id="userProfileNav" class="hidden">
                 <span id="navUserBadge" class="user-badge"></span>
@@ -105,6 +124,16 @@
                     <label>STATE / REGION</label>
                     <input type="text" id="artisanLocation" placeholder="e.g. Bishnupur, West Bengal" required>
                 </div>
+                <div class="form-group">
+                    <label>PROFILE IMAGE</label>
+                    <input type="file" id="artisanImageFile" accept="image/png,image/jpeg,image/webp" required>
+                        <button type="button" class="camera-button" onclick="openCamera('artisanImageFile')"><i class="fa-solid fa-camera"></i> Take photo</button>
+                    <small class="field-help">Choose a clear image, maximum 5 MB.</small>
+                </div>
+                <div class="form-group">
+                    <label>YOUR STORY</label>
+                    <textarea id="artisanStory" rows="3" placeholder="Tell buyers about your craft journey" required></textarea>
+                </div>
                 <button type="submit" class="btn-submit full-btn">Create Artisan Account</button>
             </form>
 
@@ -139,19 +168,6 @@
         <div class="hero-badge">VOICE-ENABLED MICRO-MARKETPLACE</div>
         <h1 class="hero-title">Preserving Heritage.<br>Digitizing Craftsmanship.</h1>
         <p class="hero-subtitle">Empowering rural artisans with voice dictation, instant AI catalog generation, and bilingual audio-assisted commerce.</p>
-    </section>
-
-    <!-- MEET OUR ARTISANS (ARTISANS AT WORK SECTION) -->
-    <section class="artisans-section" id="artisans">
-        <div class="artisans-header">
-            <span class="sub-heading">THE PEOPLE BEHIND THE CRAFT</span>
-            <h2>Meet Our Artisans</h2>
-            <p>Every handmade product has a person and a story behind it.</p>
-        </div>
-
-        <div class="artisans-grid" id="artisansGrid">
-            <!-- Dynamic Artisan Cards populate here from Supabase DB -->
-        </div>
     </section>
 
     <!-- ARTISAN DASHBOARD SECTION (Visible to Logged-in Artisans) -->
@@ -192,10 +208,11 @@
                         <label for="productPrice">PRICE (₹)</label>
                         <input type="number" id="productPrice" placeholder="e.g. 850" required>
                     </div>
-
-                    <div class="form-group">
-                        <label for="productPhoto">IMAGE URL / PHOTO</label>
-                        <input type="url" id="productPhoto" placeholder="https://images.unsplash.com/..." required>
+<div class="form-group">
+                 <label for="productPhoto">PRODUCT IMAGES</label>
+                        <input type="file" id="productPhoto" accept="image/png,image/jpeg,image/webp" multiple required>
+               <button type="button" class="camera-button" onclick="openCamera('productPhoto')"><i class="fa-solid fa-camera"></i> Take photo</button>
+                        <small class="field-help">Choose up to 6 images, maximum 5 MB each.</small>
                     </div>
 
                     <div class="form-group full-width">
@@ -209,13 +226,27 @@
                         <i class="fa-solid fa-microphone"></i> Dictate
                     </button>
                     <button type="button" class="btn-ai" onclick="generateAIDescription()">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Generate AI Description
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Generate Description
                     </button>
                     <button type="submit" class="btn-submit">Publish Listing</button>
                 </div>
             </form>
         </div>
     </section>
+
+    <div class="modal-overlay hidden" id="productDetailModal" role="dialog" aria-modal="true" aria-labelledby="productDetailTitle">
+        <div class="modal-card product-detail-modal">
+            <button class="modal-close" type="button" onclick="closeProductDetails()" aria-label="Close product details">&times;</button>
+            <div id="productDetailContent"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay hidden" id="artisanDetailModal" role="dialog" aria-modal="true" aria-labelledby="artisanDetailTitle">
+        <div class="modal-card product-detail-modal">
+            <button class="modal-close" type="button" onclick="closeArtisanDetails()" aria-label="Close artisan story">&times;</button>
+            <div id="artisanDetailContent"></div>
+        </div>
+    </div>
 
     <!-- BUYER VIEW / MARKETPLACE SECTION -->
     <section class="marketplace-section" id="marketplace">
@@ -227,6 +258,9 @@
                 <div class="search-input-wrapper">
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <input type="text" id="searchInput" placeholder="Search products..." onkeyup="filterProducts()">
+                    <button type="button" class="search-voice-button" id="searchVoiceButton" title="Search by voice" aria-label="Search by voice" onclick="startVoiceSearch()">
+                        <i class="fa-solid fa-microphone"></i>
+                    </button>
                 </div>
                 <div class="category-select-wrapper">
                     <select id="categoryFilter" onchange="filterProducts()">
@@ -243,14 +277,43 @@
 
         <!-- Dynamic Product Grid -->
         <div class="product-grid" id="productGrid"></div>
+            <section class="buyer-area hidden" id="buyerArea">
+                <div class="buyer-area-header">
+                    <h2>Your Shopping</h2>
+                    <p>Review saved items, cart contents, and order progress.</p>
+                </div>
+                <div class="buyer-area-grid">
+                    <div class="buyer-panel">
+                        <h3><i class="fa-solid fa-heart"></i> Wishlist</h3>
+                        <div id="wishlistItems"><p class="empty-state">Log in as a buyer to save products.</p></div>
+                    </div>
+                    <div class="buyer-panel">
+                        <h3><i class="fa-solid fa-cart-shopping"></i> Cart</h3>
+                        <div id="cartItems"><p class="empty-state">Your cart is empty.</p></div>
+                    </div>
+                    <div class="buyer-panel">
+                        <h3><i class="fa-solid fa-box"></i> Orders</h3>
+                        <div id="orderItems"><p class="empty-state">No orders yet.</p></div>
+                    </div>
+                </div>
+            </section>
     </section>
+
+        <!-- MEET OUR ARTISANS, AFTER PRODUCTS -->
+        <section class="artisans-section" id="artisans">
+            <div class="artisans-header">
+                <span class="sub-heading">THE PEOPLE BEHIND THE CRAFT</span>
+                <h2>Meet Our Artisans</h2>
+                <p>Explore the people, places, and stories behind every handmade piece.</p>
+            </div>
+            <div class="artisans-grid" id="artisansGrid"></div>
+        </section>
 
     <!-- Footer -->
     <footer>
         <p>&copy; 2026 KalaNidhi. Built for Smart India Hackathon (SIH 2026).</p>
     </footer>
 
-    <!-- Linked JavaScript -->
-    <script src="script.js"></script>
+    
 </body>
 </html>

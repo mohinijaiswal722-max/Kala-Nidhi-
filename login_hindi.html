@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>लॉग इन | कला NIDHI</title>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+	<link rel="stylesheet" href="logincss.css">
+	<script src="script.js"></script>
+</head>
+<body class="auth-page-body">
+	<div class="auth-page-container">
+		<div class="auth-page-header">
+			<a href="indexhindi.html" class="auth-brand">
+				<img src="assets/logo.png.jpeg" alt="कला NIDHI लोगो" class="brand-logo-img">
+				<span class="brand-title">कला NIDHI</span>
+			</a>
+			<h2>वापसी पर स्वागत है</h2>
+			<p>अपने हस्तशिल्प को प्रबंधित करने या उत्पाद देखने के लिए लॉग इन करें।</p>
+		</div>
+
+		<form id="loginForm" class="auth-form" onsubmit="handleLogin(event)">
+			<div class="form-group">
+				<label for="loginEmail">ईमेल पता</label>
+				<input type="email" id="loginEmail" placeholder="उदाहरण: artisan@kalanidhi.org" required>
+			</div>
+
+			<div class="form-group">
+				<label for="loginPassword">पासवर्ड</label>
+				<input type="password" id="loginPassword" placeholder="••••••••" required>
+			</div>
+
+			<button type="submit" class="btn-submit full-btn">लॉग इन करें</button>
+		</form>
+
+		<div class="auth-page-footer">
+			<p>नया खाता बनाना है? <a href="signup.html">यहाँ साइन अप करें</a></p>
+			<p><a href="indexhindi.html"><i class="fa-solid fa-arrow-left"></i> होम पर वापस जाएँ</a></p>
+		</div>
+	</div>
+</body>
+</html>

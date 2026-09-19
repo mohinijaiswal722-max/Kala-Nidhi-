@@ -1,11 +1,12 @@
 // ==========================================
 // 1. SUPABASE CLIENT INITIALIZATION
 // ==========================================
-const SUPABASE_URL = 'https://kjgcfexpwgnllcyftzzy.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqZ2NmZXhwd2dubGxjeWZ0enp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkxMDY0NjAsImV4cCI6MjEwNDY4MjQ2MH0.ULb2DjHrKW0rGIPUattS_y3ZLLGujrIooQYnDXZDX44';
+const SUPABASE_URL = 'https://gxsoehuxurrztnutzbik.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4c29laHV4dXJyenRudXR6YmlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMDA5MzIsImV4cCI6MjEwNDc3NjkzMn0.IlpPJqBzka-wXT7c7SS3FzqVm80eUgu3tZ9dRlS0m_Q';
 
-// Init client (uses script imported via CDN in HTML head)
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Init a separate client only for this stale auth helper script.
+// The main site uses the client declared in script.js.
+const supabaseAuthClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ==========================================
 // 2. TAB SWITCHING LOGIC
@@ -53,7 +54,7 @@ async function handleArtisanRegister(event) {
 
     try {
         // Step A: Register User in Supabase Auth
-        const { data: authData, error: authError } = await supabase.auth.signUp({
+        const { data: authData, error: authError } = await supabaseAuthClient.auth.signUp({
             email: email,
             password: password,
             options: {
@@ -68,7 +69,7 @@ async function handleArtisanRegister(event) {
 
         // Step B: Save artisan profile data to public.profiles table
         if (authData.user) {
-            const { error: profileError } = await supabase
+            const { error: profileError } = await supabaseAuthClient
                 .from('profiles')
                 .insert([
                     {
@@ -110,7 +111,7 @@ async function handleBuyerRegister(event) {
 
     try {
         // Step A: Register User in Supabase Auth
-        const { data: authData, error: authError } = await supabase.auth.signUp({
+        const { data: authData, error: authError } = await supabaseAuthClient.auth.signUp({
             email: email,
             password: password,
             options: {
@@ -125,7 +126,7 @@ async function handleBuyerRegister(event) {
 
         // Step B: Save buyer profile data to public.profiles table
         if (authData.user) {
-            const { error: profileError } = await supabase
+            const { error: profileError } = await supabaseAuthClient
                 .from('profiles')
                 .insert([
                     {

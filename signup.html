@@ -12,6 +12,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Linked CSS -->
     <link rel="stylesheet" href="style.css">
+    <!-- Linked JavaScript -->
+    <script src="script.js"></script>
 </head>
 <body class="auth-page-body">
 
@@ -28,13 +30,12 @@
 
         <!-- Role Selector Tabs -->
         <div class="auth-tabs">
-            <button class="auth-tab active" id="tabRegArtisan" onclick="switchAuthTab('regArtisan')">
+            <button type="button" class="auth-tab active" id="tabRegArtisan" onclick="switchAuthTab('regArtisan')">
                 <i class="fa-solid fa-palette"></i> Artisan (Seller)
             </button>
-            <form action ="buyer.html"> <button class="auth-tab" id="tabRegBuyer" onclick="switchAuthTab('regBuyer')">
+            <button type="button" class="auth-tab" id="tabRegBuyer" onclick="switchAuthTab('regBuyer')">
                 <i class="fa-solid fa-bag-shopping"></i> Buyer
-            </button></form>
-           
+            </button>
         </div>
 
         <!-- Artisan Registration Form -->
@@ -58,6 +59,16 @@
             <div class="form-group">
                 <label for="artisanLocation">STATE / REGION</label>
                 <input type="text" id="artisanLocation" placeholder="e.g. Bishnupur, West Bengal" required>
+            </div>
+            <div class="form-group">
+                <label for="artisanImageFile">PROFILE IMAGE</label>
+                <input type="file" id="artisanImageFile" accept="image/png,image/jpeg,image/webp" required>
+                <button type="button" class="camera-button" onclick="openCamera('artisanImageFile')"><i class="fa-solid fa-camera"></i> Take photo</button>
+                <small class="field-help">Choose a clear image, maximum 5 MB.</small>
+            </div>
+            <div class="form-group">
+                <label for="artisanStory">YOUR STORY</label>
+                <textarea id="artisanStory" rows="3" placeholder="Tell buyers about your craft journey" required></textarea>
             </div>
             <button type="submit" class="btn-submit full-btn">Create Artisan Account</button>
         </form>
@@ -90,7 +101,7 @@
         </div>
     </div>
 
-    <!-- Linked JavaScript -->
-    <script src="script.js"></script>
+    
+    
 </body>
 </html>
