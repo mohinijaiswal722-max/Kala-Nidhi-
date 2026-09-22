@@ -1,13 +1,8 @@
 // Initialize Supabase Client
 const SUPABASE_URL = 'https://gxsoehuxurrztnutzbik.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4c29laHV4dXJyenRudXR6YmlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMDA5MzIsImV4cCI6MjEwNDc3NjkzMn0.IlpPJqBzka-wXT7c7SS3FzqVm80eUgu3tZ9dRlS0m_Q';
-    window.googleTranslateElementInit = function() {
-        if (typeof window.google?.translate?.TranslateElement !== 'function' || !document.getElementById('google_translate_element')) return;
-        new window.google.translate.TranslateElement({
-            pageLanguage: 'en',
-            autoDisplay: false
-        }, 'google_translate_element');
-    };
+  
+    
 
     function toggleLanguageMenu() {
         const menu = document.getElementById('languageMenu');
@@ -356,6 +351,11 @@ window.handleLogin = async function(event) {
 
     updateUI(currentUser, currentProfile);
 
+    if (currentProfile.role === 'artisan') {
+    window.location.replace('artisandashboard.html');
+
+} else if (currentProfile.role === 'buyer') {
+
     if (window.location.pathname.includes('login_hindi.html')) {
         window.location.replace('indexhindi.html');
     } else if (window.location.pathname.includes('login.html')) {
@@ -364,6 +364,11 @@ window.handleLogin = async function(event) {
         closeAuthModal();
         alert('Successfully logged in!');
     }
+
+} else {
+    closeAuthModal();
+    alert('Successfully logged in!');
+}
 };
 
 window.handleArtisanRegister = async function(event) {
@@ -527,134 +532,439 @@ async function logoutUser() {
 // Product Management
 async function uploadImages(bucket, files, folder) {
     const client = ensureSupabaseClient();
-    if (!client || !files?.length) return [];
-    const urls = [];
+    if (!client || !files?.length) {
+        return [];
+    }
+
+    const uploadedImages = [];
 
     for (const file of files) {
         if (!file.type.startsWith('image/')) {
             showToast(`${file.name} is not an image.`, 'error');
             continue;
         }
+
         if (file.size > 5 * 1024 * 1024) {
             showToast(`${file.name} is larger than 5 MB.`, 'error');
             continue;
         }
-        const extension = file.name.split('.').pop() || 'jpg';
+
+        const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
         const path = `${folder}/${crypto.randomUUID()}.${extension}`;
-        const { error } = await client.storage.from(bucket).upload(path, file, { upsert: false, contentType: file.type });
+
+        const { error } = await client
+            .storage
+            .from(bucket)
+            .upload(path, file, {
+                upsert: false,
+                contentType: file.type
+            });
+
         if (error) {
             console.error(`${bucket} upload failed:`, error);
             showToast(`Image upload failed: ${error.message}`, 'error');
             continue;
         }
-        urls.push(client.storage.from(bucket).getPublicUrl(path).data.publicUrl);
+
+        const { data: publicUrlData } = client
+            .storage
+            .from(bucket)
+            .getPublicUrl(path);
+
+        uploadedImages.push({
+            url: publicUrlData.publicUrl,
+            path: path
+        });
     }
-    return urls;
+
+    return uploadedImages;
 }
 
 async function handlePublishProduct(event) {
     event.preventDefault();
+
     if (!currentProfile || currentProfile.role !== 'artisan') {
         alert('Only registered artisans can publish products.');
         return;
     }
 
-    const title = document.getElementById('productTitle').value;
+    const client = ensureSupabaseClient();
+
+    if (!client) {
+        alert('Supabase is not connected. Please refresh the page.');
+        return;
+    }
+
+    const title = document.getElementById('productTitle').value.trim();
     const category = document.getElementById('productCategory').value;
     const price = document.getElementById('productPrice').value;
-    const imageFiles = Array.from(document.getElementById('productPhoto')?.files || []).slice(0, 6);
-    const description = document.getElementById('productDescription').value;
+    const imageFiles = Array.from(
+        document.getElementById('productPhoto')?.files || []
+    ).slice(0, 6);
+    const description = document.getElementById('productDescription').value.trim();
 
     if (!imageFiles.length) {
         alert('Please select or capture at least one product image.');
         return;
     }
 
-    const imageUrls = await uploadImages('product-images', imageFiles, currentProfile.id);
-    if (!imageUrls.length) {
+    const uploadedImages = await uploadImages(
+        'product-images',
+        imageFiles,
+        currentProfile.id
+    );
+
+    if (!uploadedImages.length) {
         alert('Product publishing stopped because no image could be uploaded.');
         return;
     }
 
-    const { error } = await supabaseClient.from('products').insert([{
-        title,
-        category,
-        price,
-        image_url: imageUrls[0],
-        image_urls: imageUrls,
-        description,
-        artisan_id: currentProfile.id
-    }]);
+    const imageUrls = uploadedImages.map(image => image.url);
+    const imagePaths = uploadedImages.map(image => image.path);
+
+    const { error } = await client
+        .from('products')
+        .insert([{
+            title,
+            category,
+            price,
+            image_url: imageUrls[0],
+            image_urls: imageUrls,
+            image_paths: imagePaths,
+            description,
+            artisan_id: currentProfile.id
+        }]);
 
     if (error) {
+        console.error('Publishing failed:', error);
+
+        // If database insertion fails, clean up the images we just uploaded.
+        await client
+            .storage
+            .from('product-images')
+            .remove(imagePaths);
+
         alert(`Publishing failed: ${error.message}`);
-    } else {
-        alert('Product published successfully!');
-        document.getElementById('productForm').reset();
+        return;
+    }
+
+    alert('Product published successfully!');
+
+    document.getElementById('productForm').reset();
+
+    await fetchProducts();
+}
+
+// =========================================================
+// DELETE PRODUCT
+// =========================================================
+
+// =========================================================
+// DELETE PRODUCT
+// =========================================================
+// =========================================================
+// DELETE PRODUCT + PRODUCT IMAGES
+// =========================================================
+
+async function deleteProduct(productId) {
+    const client = ensureSupabaseClient();
+
+    if (!client) {
+        alert('Supabase is not connected. Please refresh the page.');
+        return;
+    }
+
+    if (!currentUser || !currentProfile) {
+        alert('Please log in first.');
+        return;
+    }
+
+    if (currentProfile.role !== 'artisan') {
+        alert('Only artisans can delete products.');
+        return;
+    }
+
+    // Find product in local cache
+    const product = productsCache.find(
+        item => String(item.id) === String(productId)
+    );
+
+    if (!product) {
+        alert('Product could not be found.');
+        return;
+    }
+
+    // Frontend ownership protection
+    if (String(product.artisan_id) !== String(currentProfile.id)) {
+        alert('You can only delete products that you created.');
+        return;
+    }
+
+    const confirmed = confirm(
+        `Are you sure you want to delete "${product.title}"?\n\n` +
+        `This will permanently delete the product and its images.\n\n` +
+        `This action cannot be undone.`
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+        /*
+         * STEP 1
+         * Get the image paths saved with this product.
+         */
+        let imagePaths = [];
+
+        if (Array.isArray(product.image_paths)) {
+            imagePaths = product.image_paths.filter(Boolean);
+        }
+
+        /*
+         * STEP 2
+         * Delete the product row.
+         *
+         * The artisan_id condition provides an additional
+         * ownership check.
+         */
+        const { error: deleteError } = await client
+            .from('products')
+            .delete()
+            .eq('id', productId)
+            .eq('artisan_id', currentProfile.id);
+
+        if (deleteError) {
+            console.error('Delete product error:', deleteError);
+            alert(`Product could not be deleted: ${deleteError.message}`);
+            return;
+        }
+
+        /*
+         * STEP 3
+         * Delete the product's images from Storage.
+         */
+        if (imagePaths.length > 0) {
+            const { error: storageError } = await client
+                .storage
+                .from('product-images')
+                .remove(imagePaths);
+
+            if (storageError) {
+                console.error(
+                    'Product images could not be deleted:',
+                    storageError
+                );
+
+                alert(
+                    'The product was deleted, but some product images ' +
+                    'could not be removed from storage.'
+                );
+            }
+        }
+
+        /*
+         * STEP 4
+         * Remove product from local cache.
+         */
+        productsCache = productsCache.filter(
+            item => String(item.id) !== String(productId)
+        );
+
+        /*
+         * STEP 5
+         * Refresh marketplace.
+         */
         await fetchProducts();
+
+        alert('Product and its images were deleted successfully.');
+
+    } catch (error) {
+        console.error('Complete product deletion failed:', error);
+        alert('Something went wrong while deleting the product.');
     }
 }
 
+window.deleteProduct = deleteProduct;
+
+window.deleteProduct = deleteProduct;
 // Fetch and Render Data
 async function fetchProducts() {
     const grid = document.getElementById('productGrid');
     if (!grid) return;
 
-    const { data: products, error } = await supabaseClient
+    const client = ensureSupabaseClient();
+
+    if (!client) {
+        grid.innerHTML = '<p class="empty-state">Supabase is not connected.</p>';
+        return;
+    }
+
+    const { data: products, error } = await client
         .from('products')
         .select(`*, profiles(full_name, location)`);
 
     if (error) {
+        console.error('Fetch products error:', error);
         grid.innerHTML = '<p class="empty-state">Products could not be loaded.</p>';
         return;
     }
 
     productsCache = products || [];
-    grid.innerHTML = productsCache.map(product => `
-        <article class="product-card">
-            <button class="product-card-button" type="button" onclick="openProductDetails(${product.id})">
-                <img src="${escapeHtml(getProductImage(product))}" alt="${escapeHtml(product.title)}" class="product-img">
-            </button>
-            <div class="product-info">
-                <span class="product-category">${escapeHtml(product.category)}</span>
-                <h3 class="product-title">${escapeHtml(product.title)}</h3>
-                <p class="artisan-details">By ${escapeHtml(product.profiles?.full_name || 'Artisan')}</p>
-                <p class="product-price">₹${Number(product.price).toLocaleString('en-IN')}</p>
-                <button class="btn-buy-now" type="button" onclick="openProductDetails(${product.id})">View product</button>
-            </div>
-        </article>
-    `).join('');
+
+    grid.innerHTML = productsCache.map(product => {
+        const isOwner =
+            currentProfile &&
+            currentProfile.role === 'artisan' &&
+            String(currentProfile.id) === String(product.artisan_id);
+
+        return `
+            <article class="product-card">
+                <button
+                    class="product-card-button"
+                    type="button"
+                    onclick="openProductDetails(${product.id})"
+                >
+                    <img
+                        src="${escapeHtml(getProductImage(product))}"
+                        alt="${escapeHtml(product.title)}"
+                        class="product-img"
+                    >
+                </button>
+
+                <div class="product-info">
+                    <span class="product-category">
+                        ${escapeHtml(product.category)}
+                    </span>
+
+                    <h3 class="product-title">
+                        ${escapeHtml(product.title)}
+                    </h3>
+
+                    <p class="artisan-details">
+                        By ${escapeHtml(product.profiles?.full_name || 'Artisan')}
+                    </p>
+
+                    <p class="product-price">
+                        ₹${Number(product.price).toLocaleString('en-IN')}
+                    </p>
+
+                    <button
+                        class="btn-buy-now"
+                        type="button"
+                        onclick="openProductDetails(${product.id})"
+                    >
+                        View product
+                    </button>
+
+                    ${
+                        isOwner
+                            ? `
+                                <button
+                                    class="btn-delete-product"
+                                    type="button"
+                                    onclick="deleteProduct(${product.id})"
+                                >
+                                    <i class="fa-solid fa-trash"></i>
+                                    Delete Product
+                                </button>
+                              `
+                            : ''
+                    }
+                </div>
+            </article>
+        `;
+    }).join('');
 }
 
 function filterProducts() {
     const grid = document.getElementById('productGrid');
     const search = document.getElementById('searchInput')?.value.trim().toLowerCase() || '';
     const category = document.getElementById('categoryFilter')?.value || 'All';
+
     if (!grid) return;
 
     const filteredProducts = productsCache.filter(product => {
-        const searchableText = [product.title, product.category, product.description, product.profiles?.full_name]
+        const searchableText = [
+            product.title,
+            product.category,
+            product.description,
+            product.profiles?.full_name
+        ]
             .filter(Boolean)
             .join(' ')
             .toLowerCase();
-        return searchableText.includes(search) && (category === 'All' || product.category === category);
+
+        return (
+            searchableText.includes(search) &&
+            (category === 'All' || product.category === category)
+        );
     });
 
     grid.innerHTML = filteredProducts.length
-        ? filteredProducts.map(product => `
-            <article class="product-card">
-                <button class="product-card-button" type="button" onclick="openProductDetails(${product.id})">
-                    <img src="${escapeHtml(getProductImage(product))}" alt="${escapeHtml(product.title)}" class="product-img">
-                </button>
-                <div class="product-info">
-                    <span class="product-category">${escapeHtml(product.category)}</span>
-                    <h3 class="product-title">${escapeHtml(product.title)}</h3>
-                    <p class="artisan-details">By ${escapeHtml(product.profiles?.full_name || 'Artisan')}</p>
-                    <p class="product-price">₹${Number(product.price).toLocaleString('en-IN')}</p>
-                    <button class="btn-buy-now" type="button" onclick="openProductDetails(${product.id})">View product</button>
-                </div>
-            </article>
-        `).join('')
+        ? filteredProducts.map(product => {
+            const isOwner =
+                currentProfile &&
+                currentProfile.role === 'artisan' &&
+                String(currentProfile.id) === String(product.artisan_id);
+
+            return `
+                <article class="product-card">
+                    <button
+                        class="product-card-button"
+                        type="button"
+                        onclick="openProductDetails(${product.id})"
+                    >
+                        <img
+                            src="${escapeHtml(getProductImage(product))}"
+                            alt="${escapeHtml(product.title)}"
+                            class="product-img"
+                        >
+                    </button>
+
+                    <div class="product-info">
+                        <span class="product-category">
+                            ${escapeHtml(product.category)}
+                        </span>
+
+                        <h3 class="product-title">
+                            ${escapeHtml(product.title)}
+                        </h3>
+
+                        <p class="artisan-details">
+                            By ${escapeHtml(product.profiles?.full_name || 'Artisan')}
+                        </p>
+
+                        <p class="product-price">
+                            ₹${Number(product.price).toLocaleString('en-IN')}
+                        </p>
+
+                        <button
+                            class="btn-buy-now"
+                            type="button"
+                            onclick="openProductDetails(${product.id})"
+                        >
+                            View product
+                        </button>
+
+                        ${
+                            isOwner
+                                ? `
+                                    <button
+                                        class="btn-delete-product"
+                                        type="button"
+                                        onclick="deleteProduct(${product.id})"
+                                    >
+                                        <i class="fa-solid fa-trash"></i>
+                                        Delete Product
+                                    </button>
+                                  `
+                                : ''
+                        }
+                    </div>
+                </article>
+            `;
+        }).join('')
         : '<p class="empty-state">No products match your search.</p>';
 }
 
@@ -707,76 +1017,514 @@ function getProductImages(product) {
 }
 
 async function openProductDetails(productId) {
-    const product = productsCache.find(item => Number(item.id) === Number(productId));
+    const product = productsCache.find(
+        item => Number(item.id) === Number(productId)
+    );
+
     const modal = document.getElementById('productDetailModal');
     const content = document.getElementById('productDetailContent');
+
     if (!product || !modal || !content) return;
 
     const client = ensureSupabaseClient();
-    const { data: reviews } = await client
+
+    if (!client) {
+        showToast('Supabase is not connected.', 'error');
+        return;
+    }
+
+    // ---------------------------------------------------------
+    // LOAD REVIEWS
+    // ---------------------------------------------------------
+
+    const { data: reviews, error: reviewError } = await client
         .from('product_reviews')
         .select('*, profiles(full_name)')
         .eq('product_id', product.id)
         .order('created_at', { ascending: false });
 
+    if (reviewError) {
+        console.error('Failed to load reviews:', reviewError);
+    }
+
     const reviewRows = reviews || [];
+
+    // ---------------------------------------------------------
+    // CHECK WISHLIST
+    // ---------------------------------------------------------
+
     let isWishlisted = false;
+
     if (currentUser && currentProfile?.role === 'buyer') {
-        const { data: wishlistRow } = await client
+        const { data: wishlistRow, error: wishlistError } = await client
             .from('wishlists')
             .select('id')
             .eq('buyer_id', currentUser.id)
             .eq('product_id', product.id)
             .maybeSingle();
+
+        if (wishlistError) {
+            console.error('Wishlist check failed:', wishlistError);
+        }
+
         isWishlisted = Boolean(wishlistRow);
     }
-    const average = reviewRows.length
-        ? (reviewRows.reduce((sum, review) => sum + review.rating, 0) / reviewRows.length).toFixed(1)
-        : 'No ratings';
+
+    // ---------------------------------------------------------
+    // PRODUCT DATA
+    // ---------------------------------------------------------
+
+    const productImages = getProductImages(product);
+
+    const images = productImages.length
+        ? productImages
+        : ['assets/logo.png.jpeg'];
+
+    const averageRating = reviewRows.length
+        ? (
+            reviewRows.reduce(
+                (sum, review) => sum + Number(review.rating || 0),
+                0
+            ) / reviewRows.length
+        ).toFixed(1)
+        : null;
+
+    const artisanName =
+        product.profiles?.full_name || 'KalaNidhi Artisan';
+
+    const price = Number(product.price || 0);
+
+    // ---------------------------------------------------------
+    // REVIEWS
+    // ---------------------------------------------------------
+
     const reviewHtml = reviewRows.length
         ? reviewRows.map(review => `
-            <div class="review-item">
-                <strong>${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</strong>
-                <span>${escapeHtml(review.profiles?.full_name || 'Buyer')}</span>
-                <p>${escapeHtml(review.review)}</p>
-            </div>
+            <article class="product-detail-review">
+                <div class="product-detail-review-top">
+                    <strong class="review-stars">
+                        ${'★'.repeat(Number(review.rating || 0))}
+                        ${'☆'.repeat(5 - Number(review.rating || 0))}
+                    </strong>
+
+                    <span class="review-author">
+                        ${escapeHtml(
+                            review.profiles?.full_name || 'Buyer'
+                        )}
+                    </span>
+                </div>
+
+                <p>
+                    ${escapeHtml(review.review || '')}
+                </p>
+            </article>
         `).join('')
-        : '<p class="empty-state">No reviews yet. Be the first to review this product.</p>';
+        : `
+            <div class="product-detail-no-reviews">
+                <i class="fa-regular fa-comment-dots"></i>
+                <p>No reviews yet.</p>
+                <span>Be the first buyer to share your experience.</span>
+            </div>
+        `;
+
+    // ---------------------------------------------------------
+    // RENDER MODAL
+    // ---------------------------------------------------------
 
     content.innerHTML = `
-        <div class="product-gallery">
-            ${getProductImages(product).map(image => `<img class="detail-image" src="${escapeHtml(image)}" alt="${escapeHtml(product.title)}">`).join('')}
+        <div class="product-detail-layout">
+
+            <!-- ================= IMAGE GALLERY ================= -->
+
+            <div class="product-detail-gallery">
+
+                <span class="product-detail-category">
+                    ${escapeHtml(product.category || 'Handcrafted')}
+                </span>
+
+                <div class="product-detail-image-container">
+
+                    <img
+                        id="productDetailMainImage"
+                        class="product-detail-main-image"
+                        src="${escapeHtml(images[0])}"
+                        alt="${escapeHtml(product.title)}"
+                    >
+
+                </div>
+
+                ${
+                    images.length > 1
+                        ? `
+                            <div class="product-detail-thumbnails">
+
+                                ${images.map((image, index) => `
+                                    <button
+                                        type="button"
+                                        class="product-detail-thumbnail ${
+                                            index === 0 ? 'active' : ''
+                                        }"
+                                        onclick="changeProductDetailImage(
+                                            ${JSON.stringify(image)},
+                                            this
+                                        )"
+                                        aria-label="View product image ${index + 1}"
+                                    >
+                                        <img
+                                            src="${escapeHtml(image)}"
+                                            alt="${escapeHtml(product.title)} ${index + 1}"
+                                        >
+                                    </button>
+                                `).join('')}
+
+                            </div>
+                        `
+                        : ''
+                }
+
+                <div class="product-detail-image-count">
+                    <i class="fa-regular fa-images"></i>
+                    ${images.length} ${images.length === 1 ? 'Photo' : 'Photos'}
+                </div>
+
+            </div>
+
+
+            <!-- ================= PRODUCT INFORMATION ================= -->
+
+            <div class="product-detail-info">
+
+                <div class="product-detail-heading">
+
+                    <span class="product-detail-small-label">
+                        HANDCRAFTED PRODUCT
+                    </span>
+
+                    <h2 id="productDetailTitle">
+                        ${escapeHtml(product.title)}
+                    </h2>
+
+                    <div class="product-detail-rating-row">
+
+                        ${
+                            averageRating
+                                ? `
+                                    <span class="product-detail-rating">
+                                        <i class="fa-solid fa-star"></i>
+                                        ${averageRating}
+                                    </span>
+
+                                    <span class="product-detail-review-count">
+                                        ${reviewRows.length}
+                                        ${
+                                            reviewRows.length === 1
+                                                ? 'review'
+                                                : 'reviews'
+                                        }
+                                    </span>
+                                `
+                                : `
+                                    <span class="product-detail-no-rating">
+                                        <i class="fa-regular fa-star"></i>
+                                        No ratings yet
+                                    </span>
+                                `
+                        }
+
+                    </div>
+
+                </div>
+
+
+                <!-- PRICE -->
+
+                <div class="product-detail-price">
+                    ₹${price.toLocaleString('en-IN')}
+                </div>
+
+
+                <!-- DESCRIPTION -->
+
+                <div class="product-detail-description-block">
+
+                    <h3>
+                        <i class="fa-solid fa-feather-pointed"></i>
+                        About this piece
+                    </h3>
+
+                    <p class="product-detail-description">
+                        ${escapeHtml(
+                            product.description ||
+                            'No description provided for this handcrafted product.'
+                        )}
+                    </p>
+
+                </div>
+
+
+                <!-- PRODUCT DETAILS -->
+
+                <div class="product-detail-meta">
+
+                    <div class="product-detail-meta-item">
+
+                        <div class="product-detail-meta-icon">
+                            <i class="fa-solid fa-layer-group"></i>
+                        </div>
+
+                        <div>
+                            <span class="product-detail-meta-label">
+                                Category
+                            </span>
+
+                            <span class="product-detail-meta-value">
+                                ${escapeHtml(
+                                    product.category || 'Handicraft'
+                                )}
+                            </span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="product-detail-meta-item">
+
+                        <div class="product-detail-meta-icon">
+                            <i class="fa-solid fa-hands"></i>
+                        </div>
+
+                        <div>
+                            <span class="product-detail-meta-label">
+                                Made by
+                            </span>
+
+                            <span class="product-detail-meta-value">
+                                Indian Artisan
+                            </span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ARTISAN -->
+
+                <div class="product-detail-artisan">
+
+                    <div class="product-detail-artisan-avatar">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+
+                    <div class="product-detail-artisan-info">
+
+                        <span class="product-detail-artisan-label">
+                            Crafted by
+                        </span>
+
+                        <div class="product-detail-artisan-name">
+                            ${escapeHtml(artisanName)}
+                        </div>
+
+                    </div>
+
+                    <i class="fa-solid fa-chevron-right"></i>
+
+                </div>
+
+
+                <!-- ACTION BUTTONS -->
+
+                <div class="product-detail-actions">
+
+                    <button
+                        id="wishlistButton-${product.id}"
+                        class="product-detail-wishlist-btn ${
+                            isWishlisted ? 'is-active' : ''
+                        }"
+                        type="button"
+                        onclick="toggleWishlist(${product.id}, event)"
+                    >
+                        <i class="${
+                            isWishlisted
+                                ? 'fa-solid'
+                                : 'fa-regular'
+                        } fa-heart"></i>
+
+                        ${
+                            isWishlisted
+                                ? 'Wishlisted'
+                                : 'Add to Wishlist'
+                        }
+                    </button>
+
+
+                    <button
+                        id="cartButton-${product.id}"
+                        class="product-detail-cart-btn"
+                        type="button"
+                        onclick="addToCart(${product.id}, event)"
+                    >
+                        <i class="fa-solid fa-cart-plus"></i>
+                        Add to Cart
+                    </button>
+
+
+                    <button
+                        id="orderButton-${product.id}"
+                        class="product-detail-buy-btn"
+                        type="button"
+                        onclick="orderProduct(${product.id}, 1, event)"
+                    >
+                        <i class="fa-solid fa-bag-shopping"></i>
+                        Buy Now
+                    </button>
+
+                </div>
+
+
+                <!-- REVIEWS -->
+
+                <section class="product-detail-reviews">
+
+                    <div class="product-detail-section-heading">
+
+                        <div>
+                            <span class="product-detail-small-label">
+                                BUYER FEEDBACK
+                            </span>
+
+                            <h3>
+                                Ratings & Reviews
+                            </h3>
+                        </div>
+
+                        ${
+                            averageRating
+                                ? `
+                                    <div class="product-detail-rating-large">
+                                        <i class="fa-solid fa-star"></i>
+                                        ${averageRating}
+                                    </div>
+                                `
+                                : ''
+                        }
+
+                    </div>
+
+                    <div class="product-detail-review-list">
+                        ${reviewHtml}
+                    </div>
+
+                </section>
+
+
+                <!-- REVIEW FORM -->
+
+                <form
+                    class="review-form product-detail-review-form"
+                    onsubmit="submitReview(event, ${product.id})"
+                >
+
+                    <h3>
+                        Share your experience
+                    </h3>
+
+                    <select
+                        name="rating"
+                        required
+                        aria-label="Rating"
+                    >
+                        <option value="">Choose rating</option>
+                        <option value="5">★★★★★ — Excellent</option>
+                        <option value="4">★★★★☆ — Very good</option>
+                        <option value="3">★★★☆☆ — Good</option>
+                        <option value="2">★★☆☆☆ — Fair</option>
+                        <option value="1">★☆☆☆☆ — Poor</option>
+                    </select>
+
+                    <textarea
+                        name="review"
+                        rows="3"
+                        placeholder="Tell other buyers about your experience..."
+                        required
+                    ></textarea>
+
+                    <button
+                        class="btn-submit"
+                        type="submit"
+                    >
+                        <i class="fa-solid fa-paper-plane"></i>
+                        Submit Review
+                    </button>
+
+                </form>
+
+            </div>
+
         </div>
-        <span class="product-category">${escapeHtml(product.category)}</span>
-        <h2 id="productDetailTitle">${escapeHtml(product.title)}</h2>
-        <p class="artisan-details">By ${escapeHtml(product.profiles?.full_name || 'Artisan')}</p>
-        <p class="product-price">₹${Number(product.price).toLocaleString('en-IN')} <span class="rating-summary">${average} (${reviewRows.length})</span></p>
-        <p class="description">${escapeHtml(product.description || 'No description provided.')}</p>
-        <div class="product-actions">
-            <button id="wishlistButton-${product.id}" class="btn-secondary action-button${isWishlisted ? ' is-active' : ''}" type="button" onclick="toggleWishlist(${product.id}, event)"><i class="fa-solid fa-heart"></i> ${isWishlisted ? 'Wishlisted' : 'Wishlist'}</button>
-            <button id="cartButton-${product.id}" class="btn-secondary action-button" type="button" onclick="addToCart(${product.id}, event)"><i class="fa-solid fa-cart-shopping"></i> Add to cart</button>
-            <button id="orderButton-${product.id}" class="btn-buy-now action-button" type="button" onclick="orderProduct(${product.id}, 1, event)"><i class="fa-solid fa-bag-shopping"></i> Order now</button>
-        </div>
-        <section class="product-reviews">
-            <h3>Ratings and reviews <span class="rating-summary">${average}</span></h3>
-            <div>${reviewHtml}</div>
-        </section>
-        <form class="review-form" onsubmit="submitReview(event, ${product.id})">
-            <h3>Leave a review</h3>
-            <select name="rating" required aria-label="Rating">
-                <option value="">Choose rating</option>
-                <option value="5">5 - Excellent</option>
-                <option value="4">4 - Very good</option>
-                <option value="3">3 - Good</option>
-                <option value="2">2 - Fair</option>
-                <option value="1">1 - Poor</option>
-            </select>
-            <textarea name="review" rows="3" placeholder="Share your experience" required></textarea>
-            <button class="btn-submit" type="submit">Submit review</button>
-        </form>
     `;
+
     modal.classList.remove('hidden');
+
+    // Reset modal scroll position whenever a new product opens.
+    const detailContent =
+        document.getElementById('productDetailContent');
+
+    if (detailContent) {
+        detailContent.scrollTop = 0;
+    }
 }
+
+function changeProductDetailImage(imageUrl, button) {
+    const mainImage =
+        document.getElementById('productDetailMainImage');
+
+    if (!mainImage) return;
+
+    mainImage.src = imageUrl;
+
+    document
+        .querySelectorAll('.product-detail-thumbnail')
+        .forEach(thumbnail => {
+            thumbnail.classList.remove('active');
+        });
+
+    button?.classList.add('active');
+}
+
+function addProductButtonRipple(event) {
+    const button = event?.currentTarget;
+
+    if (!button) return;
+
+    const rect = button.getBoundingClientRect();
+
+    const ripple = document.createElement('span');
+
+    ripple.className = 'product-button-ripple';
+
+    const size = Math.max(rect.width, rect.height);
+
+    ripple.style.width = `${size}px`;
+    ripple.style.height = `${size}px`;
+
+    ripple.style.left =
+        `${event.clientX - rect.left - size / 2}px`;
+
+    ripple.style.top =
+        `${event.clientY - rect.top - size / 2}px`;
+
+    button.appendChild(ripple);
+
+    setTimeout(() => {
+        ripple.remove();
+    }, 550);
+}
+
+window.addProductButtonRipple = addProductButtonRipple;
+
+window.changeProductDetailImage = changeProductDetailImage;
 
 function closeProductDetails() {
     document.getElementById('productDetailModal')?.classList.add('hidden');
@@ -912,18 +1660,416 @@ async function submitReview(event, productId) {
 
 async function loadBuyerData() {
     if (!currentUser || currentProfile?.role !== 'buyer') return;
+
     const client = ensureSupabaseClient();
+    if (!client) return;
+
     const [wishlistResult, cartResult, orderResult] = await Promise.all([
-        client.from('wishlists').select('id, products(id, title, price)').eq('buyer_id', currentUser.id),
-        client.from('cart_items').select('id, quantity, products(id, title, price)').eq('buyer_id', currentUser.id),
-        client.from('orders').select('id, quantity, total_price, status, products(title)').eq('buyer_id', currentUser.id).order('created_at', { ascending: false })
+        client
+            .from('wishlists')
+            .select('id, products(id, title, price, image_url, image_urls)')
+            .eq('buyer_id', currentUser.id),
+
+        client
+            .from('cart_items')
+            .select('id, quantity, products(id, title, price, image_url, image_urls)')
+            .eq('buyer_id', currentUser.id),
+
+        client
+            .from('orders')
+            .select('id, quantity, total_price, status, products(title)')
+            .eq('buyer_id', currentUser.id)
+            .order('created_at', { ascending: false })
     ]);
-    [wishlistResult, cartResult, orderResult].forEach(result => {
-        if (result.error) console.error('Buyer data load failed:', result.error);
-    });
-    renderBuyerList('wishlistItems', wishlistResult.data, item => `${item.products?.title || 'Product'} <small>₹${item.products?.price || 0}</small>`);
-    renderBuyerList('cartItems', cartResult.data, item => `${item.products?.title || 'Product'} <small>Qty: ${item.quantity}</small><button class="btn-buy-now" type="button" onclick="orderProduct(${item.products?.id}, ${item.quantity})">Order</button>`);
-    renderBuyerList('orderItems', orderResult.data, item => `${item.products?.title || 'Product'} <small>${item.status} · ₹${item.total_price}</small>`);
+
+    if (wishlistResult.error) {
+        console.error('Wishlist load failed:', wishlistResult.error);
+    }
+
+    if (cartResult.error) {
+        console.error('Cart load failed:', cartResult.error);
+    }
+
+    if (orderResult.error) {
+        console.error('Orders load failed:', orderResult.error);
+    }
+
+    const wishlistItems = wishlistResult.data || [];
+    const cartItems = cartResult.data || [];
+    const orderItems = orderResult.data || [];
+
+    /* -------------------------
+       WISHLIST
+       ------------------------- */
+
+    renderBuyerList(
+        'wishlistItems',
+        wishlistItems,
+        item => `
+            ${escapeHtml(item.products?.title || 'Product')}
+            <small>
+                ₹${Number(item.products?.price || 0).toLocaleString('en-IN')}
+            </small>
+        `
+    );
+
+
+    /* -------------------------
+       CART
+       ------------------------- */
+
+    renderBuyerList(
+        'cartItems',
+        cartItems,
+        item => `
+            ${escapeHtml(item.products?.title || 'Product')}
+
+            <small>
+                Qty: ${item.quantity}
+            </small>
+
+            <button
+                class="btn-buy-now"
+                type="button"
+                onclick="openBuyerCheckout()"
+            >
+                <i class="fa-solid fa-cart-shopping"></i>
+                Checkout
+            </button>
+        `
+    );
+
+
+    /* -------------------------
+       ORDERS
+       ------------------------- */
+
+    renderBuyerList(
+        'orderItems',
+        orderItems,
+        item => `
+            ${escapeHtml(item.products?.title || 'Product')}
+
+            <small>
+                ${escapeHtml(item.status || 'Pending')}
+                · ₹${Number(item.total_price || 0).toLocaleString('en-IN')}
+            </small>
+        `
+    );
+}
+/* =========================================================
+   BUYER CHECKOUT / ORDER SUMMARY
+   ========================================================= */
+
+async function openBuyerCheckout() {
+
+    if (!requireBuyer()) return;
+
+    const client = ensureSupabaseClient();
+
+    if (!client) {
+        showToast('Supabase is not connected.', 'error');
+        return;
+    }
+
+    const modal = document.getElementById('buyerCheckoutModal');
+    const summary = document.getElementById('buyerOrderSummary');
+
+    if (!modal || !summary) {
+        console.error('Buyer checkout modal was not found.');
+        return;
+    }
+
+    summary.innerHTML = `
+        <p class="empty-state">
+            Loading your cart...
+        </p>
+    `;
+
+    modal.classList.remove('hidden');
+
+    const { data: cartItems, error } = await client
+        .from('cart_items')
+        .select(`
+            id,
+            quantity,
+            products(
+                id,
+                title,
+                price,
+                image_url,
+                image_urls
+            )
+        `)
+        .eq('buyer_id', currentUser.id);
+
+    if (error) {
+        console.error('Checkout cart load failed:', error);
+
+        summary.innerHTML = `
+            <p class="empty-state">
+                Could not load your cart.
+            </p>
+        `;
+
+        showToast(`Cart could not be loaded: ${error.message}`, 'error');
+        return;
+    }
+
+    if (!cartItems || !cartItems.length) {
+
+        summary.innerHTML = `
+            <p class="empty-state">
+                Your cart is empty.
+            </p>
+        `;
+
+        updateBuyerCheckoutTotal(0);
+        return;
+    }
+
+    let subtotal = 0;
+
+    summary.innerHTML = cartItems.map(item => {
+
+        const product = item.products;
+
+        if (!product) return '';
+
+        const price = Number(product.price || 0);
+        const quantity = Number(item.quantity || 1);
+        const itemTotal = price * quantity;
+
+        subtotal += itemTotal;
+
+        const image =
+            Array.isArray(product.image_urls) &&
+            product.image_urls.length
+                ? product.image_urls[0]
+                : product.image_url || 'assets/logo.png.jpeg';
+
+        return `
+            <div class="buyer-order-item">
+
+                <img
+                    src="${escapeHtml(image)}"
+                    alt="${escapeHtml(product.title || 'Product')}"
+                    class="buyer-order-item-image"
+                >
+
+                <div class="buyer-order-item-details">
+
+                    <h4>
+                        ${escapeHtml(product.title || 'Product')}
+                    </h4>
+
+                    <p>
+                        ₹${price.toLocaleString('en-IN')}
+                        × ${quantity}
+                    </p>
+
+                    <strong>
+                        ₹${itemTotal.toLocaleString('en-IN')}
+                    </strong>
+
+                </div>
+
+            </div>
+        `;
+
+    }).join('');
+
+    updateBuyerCheckoutTotal(subtotal);
+}
+
+
+/* =========================================================
+   UPDATE BUYER CHECKOUT TOTAL
+   ========================================================= */
+
+function updateBuyerCheckoutTotal(subtotal) {
+
+    const subtotalElement =
+        document.getElementById('buyerCheckoutSubtotal');
+
+    const totalElement =
+        document.getElementById('buyerCheckoutTotal');
+
+    if (subtotalElement) {
+        subtotalElement.textContent =
+            `₹${Number(subtotal).toLocaleString('en-IN')}`;
+    }
+
+    if (totalElement) {
+        totalElement.textContent =
+            `₹${Number(subtotal).toLocaleString('en-IN')}`;
+    }
+}
+
+
+/* =========================================================
+   CLOSE BUYER CHECKOUT
+   ========================================================= */
+
+function closeBuyerCheckout() {
+
+    const modal =
+        document.getElementById('buyerCheckoutModal');
+
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+
+/* =========================================================
+   PLACE BUYER ORDER
+   ========================================================= */
+
+async function placeBuyerOrder() {
+    if (!requireBuyer()) return;
+
+    const client = ensureSupabaseClient();
+
+    if (!client) {
+        showToast('Supabase is not connected.', 'error');
+        return;
+    }
+
+    const button = document.getElementById('buyerPlaceOrderButton');
+
+    if (button) {
+        button.disabled = true;
+        button.innerHTML = `
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            Placing Order...
+        `;
+    }
+
+    try {
+        const { data: cartItems, error: cartError } = await client
+            .from('cart_items')
+            .select(`
+                id,
+                quantity,
+                products(
+                    id,
+                    title,
+                    price
+                )
+            `)
+            .eq('buyer_id', currentUser.id);
+
+        if (cartError) {
+            throw cartError;
+        }
+
+        if (!cartItems || !cartItems.length) {
+            showToast('Your cart is empty.', 'error');
+            return;
+        }
+
+        // Validate and calculate every cart item
+        const orderRows = [];
+
+        for (const item of cartItems) {
+            const product = item.products;
+
+            if (!product) {
+                console.warn('Skipping cart item because product was not found:', item);
+                continue;
+            }
+
+            const quantity = Math.max(1, Number(item.quantity) || 1);
+            const price = Number(product.price);
+
+            // Prevent invalid/zero prices from reaching the orders table
+            if (!Number.isFinite(price) || price <= 0) {
+                console.error('Invalid product price:', {
+                    productId: product.id,
+                    title: product.title,
+                    price: product.price
+                });
+
+                showToast(
+                    `"${product.title}" has an invalid price and cannot be ordered.`,
+                    'error'
+                );
+
+                return;
+            }
+
+            const totalPrice = price * quantity;
+
+            if (!Number.isFinite(totalPrice) || totalPrice <= 0) {
+                showToast(
+                    `"${product.title}" has an invalid order total.`,
+                    'error'
+                );
+
+                return;
+            }
+
+            orderRows.push({
+                buyer_id: currentUser.id,
+                product_id: product.id,
+                quantity: quantity,
+                total_price: totalPrice
+            });
+        }
+
+        if (!orderRows.length) {
+            showToast('No valid products were found in your cart.', 'error');
+            return;
+        }
+
+        console.log('Submitting order rows:', orderRows);
+
+        const { error: orderError } = await client
+            .from('orders')
+            .insert(orderRows);
+
+        if (orderError) {
+            console.error('Order insert failed:', orderError);
+            throw orderError;
+        }
+
+        // Clear cart only after orders are successfully created
+        const { error: deleteCartError } = await client
+            .from('cart_items')
+            .delete()
+            .eq('buyer_id', currentUser.id);
+
+        if (deleteCartError) {
+            console.error(
+                'Order placed but cart could not be cleared:',
+                deleteCartError
+            );
+        }
+
+        closeBuyerCheckout();
+
+        showToast('Your order has been placed successfully!');
+
+        await loadBuyerData();
+
+    } catch (error) {
+        console.error('Buyer checkout failed:', error);
+
+        showToast(
+            `Order could not be placed: ${error.message}`,
+            'error'
+        );
+
+    } finally {
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = `
+                <i class="fa-solid fa-check"></i>
+                Place Order
+            `;
+        }
+    }
 }
 
 function renderBuyerList(elementId, items, renderItem) {
@@ -994,6 +2140,84 @@ function simulateVoiceInput(elementId) {
     }
 }
 
+// Contact Form - Save messages to Supabase
+async function handleContactForm(event) {
+    event.preventDefault();
+
+    const client = ensureSupabaseClient();
+
+    if (!client) {
+        showToast('Supabase is not ready. Please refresh the page.', 'error');
+        return;
+    }
+
+    const form = event.currentTarget;
+    const submitButton = form.querySelector('.contact-submit');
+
+    const name = document.getElementById('contactName')?.value.trim();
+    const email = document.getElementById('contactEmail')?.value.trim();
+    const message = document.getElementById('contactMessage')?.value.trim();
+
+    if (!name || !email || !message) {
+        showToast('Please fill in all fields.', 'error');
+        return;
+    }
+
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = 'Sending...';
+    }
+
+    try {
+        const { error } = await client
+            .from('contact_messages')
+            .insert({
+                name: name,
+                email: email,
+                message: message
+            });
+
+        if (error) {
+            console.error('Contact form submission failed:', error);
+            showToast(`Message failed: ${error.message}`, 'error');
+            return;
+        }
+
+        form.reset();
+
+        showToast('Your message has been sent successfully!');
+
+    } catch (error) {
+        console.error('Contact form error:', error);
+        showToast('Something went wrong. Please try again.', 'error');
+
+    } finally {
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Send Message';
+        }
+    }
+}
+
+async function deleteProductImage(filePath) {
+  // Example filePath: "product-images/surahi_123.jpg" or "folder/image.png"
+  const { data, error } = await supabase
+    .storage
+    .from('product-images') // Replace with your actual bucket name
+    .remove([filePath]);
+
+  if (error) {
+    console.error('Error deleting image:', error.message);
+    alert('Failed to delete image: ' + error.message);
+  } else {
+    console.log('Image successfully deleted:', data);
+    alert('Image deleted from storage!');
+  }
+}
+window.handleContactForm = handleContactForm;
 window.updateUI = updateUI;
 window.checkSession = checkSession;
 window.loadUserProfile = loadUserProfile;
+window.openBuyerCheckout = openBuyerCheckout;
+window.closeBuyerCheckout = closeBuyerCheckout;
+window.placeBuyerOrder = placeBuyerOrder;

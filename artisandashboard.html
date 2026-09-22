@@ -1,0 +1,1782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>KalaNidhi | Artisan Portal</title>
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <!-- FontAwesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    >
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Existing KalaNidhi CSS -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+
+/* =========================================================
+   KALANIDHI ARTISAN PORTAL
+   DARK NAVY THEME
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    font-family: "Inter", Arial, sans-serif;
+    background: #0b1426;
+    color: #f5f7ff;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.navbar {
+    min-height: 78px;
+    padding: 12px 4.5%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    background: #0b1426;
+    border-bottom: 1px solid #263650;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-logo-img {
+    width: 58px;
+    height: 52px;
+    object-fit: contain;
+}
+
+.brand-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-title {
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.brand-tagline {
+    margin: 3px 0 0;
+    color: #aeb9cc;
+    font-size: 11px;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.nav-item {
+    color: #f2f5fb;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.nav-item:hover {
+    color: #4b8df8;
+}
+
+.btn-logout {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    padding: 9px 15px;
+
+    border: 1px solid #30425f;
+    border-radius: 8px;
+
+    background: #111d31;
+    color: #cbd5e5;
+
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-logout:hover {
+    border-color: #3b82f6;
+    color: #ffffff;
+}
+
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.artisan-portal-hero {
+    padding: 78px 7%;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(11, 20, 38, 0.98),
+            rgba(20, 34, 58, 0.98)
+        );
+    border-bottom: 1px solid #263650;
+}
+
+.artisan-portal-content {
+    max-width: 900px;
+}
+
+.artisan-portal-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    color: #4b8df8;
+
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+}
+
+.artisan-portal-hero h1 {
+    margin: 15px 0;
+
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(42px, 6vw, 64px);
+    line-height: 1.1;
+
+    color: #ffffff;
+}
+
+.artisan-portal-hero h1 span {
+    color: #4b8df8;
+}
+
+.artisan-portal-hero p {
+    max-width: 720px;
+    margin: 0;
+
+    color: #aeb9cc;
+
+    font-size: 17px;
+    line-height: 1.7;
+}
+
+
+/* =========================================================
+   WORKSPACE
+   ========================================================= */
+
+.artisan-portal-section {
+    width: 90%;
+    max-width: 1200px;
+
+    margin: auto;
+    padding: 65px 0 90px;
+}
+
+.artisan-welcome {
+    margin-bottom: 32px;
+}
+
+.section-tag {
+    color: #4b8df8;
+
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.4px;
+}
+
+.artisan-welcome h2 {
+    margin: 9px 0;
+
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 34px;
+
+    color: #ffffff;
+}
+
+.artisan-welcome h2 span {
+    color: #4b8df8;
+}
+
+.artisan-welcome p {
+    margin: 0;
+
+    color: #aeb9cc;
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   FEATURE CARDS
+   ========================================================= */
+
+.artisan-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+}
+
+.artisan-feature-card {
+    position: relative;
+
+    min-height: 275px;
+    padding: 28px;
+
+    background: #142139;
+    border: 1px solid #2a3a55;
+    border-radius: 16px;
+
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.20);
+
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.artisan-feature-card:hover {
+    transform: translateY(-3px);
+
+    border-color: #3b82f6;
+
+    box-shadow:
+        0 16px 35px rgba(0, 0, 0, 0.28);
+}
+
+
+/* =========================================================
+   FEATURE ICONS
+   ========================================================= */
+
+.feature-icon {
+    width: 50px;
+    height: 50px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 18px;
+
+    border-radius: 12px;
+
+    background: #1c3152;
+    color: #4b8df8;
+
+    font-size: 20px;
+}
+
+.feature-label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #4b8df8;
+
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+}
+
+.artisan-feature-card h3 {
+    margin: 0 0 10px;
+
+    color: #ffffff;
+
+    font-size: 21px;
+}
+
+.artisan-feature-card p {
+    margin: 0 0 22px;
+
+    color: #aeb9cc;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   FEATURE BUTTONS
+   ========================================================= */
+
+.artisan-feature-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    padding: 11px 17px;
+
+    border: 0;
+    border-radius: 8px;
+
+    background: #3b82f6;
+    color: #ffffff;
+
+    text-decoration: none;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: background 0.2s ease;
+}
+
+.artisan-feature-btn:hover {
+    background: #2563eb;
+}
+
+
+/* =========================================================
+   ARTISAN STORE - HIGHLIGHTED NEW FEATURE
+   ========================================================= */
+
+.store-feature {
+    border: 1px solid #3b82f6;
+    background: #152641;
+}
+
+.new-feature-badge {
+    position: absolute;
+
+    top: 16px;
+    right: 16px;
+
+    padding: 5px 9px;
+
+    border-radius: 6px;
+
+    background: #1d4f9e;
+    color: #dbeafe;
+
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .7px;
+}
+
+.store-icon {
+    background: #1c3152;
+    color: #4b8df8;
+}
+
+.store-btn {
+    background: #3b82f6;
+}
+
+.store-btn:hover {
+    background: #2563eb;
+}
+
+
+/* =========================================================
+   SMART AI CATALOGUER
+   ========================================================= */
+
+.artisan-cataloguer-section {
+    padding: 55px 0 80px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #101b30 0%,
+            #142139 100%
+        );
+
+    border-top: 1px solid #263650;
+    border-bottom: 1px solid #263650;
+}
+
+.cataloguer-wrapper {
+    width: 90%;
+    max-width: 1150px;
+
+    margin: auto;
+}
+
+
+/* =========================================================
+   CATALOGUER HEADING
+   ========================================================= */
+
+.cataloguer-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    gap: 25px;
+
+    margin-bottom: 28px;
+
+    padding-bottom: 22px;
+
+    border-bottom: 1px solid #2a3a55;
+}
+
+.cataloguer-heading .section-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    color: #4b8df8;
+}
+
+.cataloguer-heading h2 {
+    margin: 9px 0 10px;
+
+    color: #ffffff;
+
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 38px;
+    line-height: 1.2;
+}
+
+.cataloguer-heading h2 span {
+    display: inline-block;
+
+    margin-left: 8px;
+    padding: 5px 9px;
+
+    border-radius: 6px;
+
+    background: #3b82f6;
+    color: #ffffff;
+
+    font-family: "Inter", Arial, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.cataloguer-heading p {
+    max-width: 800px;
+
+    margin: 0;
+
+    color: #aeb9cc;
+
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.cataloguer-close {
+    width: 40px;
+    height: 40px;
+
+    flex-shrink: 0;
+
+    border: 1px solid #30425f;
+    border-radius: 50%;
+
+    background: #111d31;
+    color: #aeb9cc;
+
+    cursor: pointer;
+}
+
+.cataloguer-close:hover {
+    border-color: #3b82f6;
+    color: #ffffff;
+}
+
+
+/* =========================================================
+   CATALOGUER TWO-COLUMN LAYOUT
+   ========================================================= */
+
+.cataloguer-layout {
+    display: grid;
+
+    grid-template-columns: 1.55fr .8fr;
+
+    gap: 25px;
+
+    align-items: start;
+}
+
+
+/* =========================================================
+   CATALOGUER FORM CARD
+   ========================================================= */
+
+.cataloguer-card {
+    padding: 30px;
+
+    background: #142139;
+    border: 1px solid #2a3a55;
+    border-radius: 14px;
+
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.22);
+}
+
+.cataloguer-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 25px;
+
+    padding-bottom: 16px;
+
+    border-bottom: 1px solid #2a3a55;
+
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.cataloguer-card-header i {
+    color: #4b8df8;
+    font-size: 19px;
+}
+
+.cataloguer-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cataloguer-step span {
+    display: inline-flex;
+
+    width: 30px;
+    height: 30px;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 7px;
+
+    background: #1c3152;
+    color: #4b8df8;
+
+    font-size: 12px;
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   FORM
+   ========================================================= */
+
+.cataloguer-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    width: 100%;
+}
+
+.form-row {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 18px;
+}
+
+.cataloguer-form label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #cbd5e1;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.cataloguer-form input,
+.cataloguer-form select,
+.cataloguer-form textarea {
+    width: 100%;
+
+    padding: 13px;
+
+    border: 1px solid #30425f;
+    border-radius: 8px;
+
+    background: #0c1628;
+    color: #f5f7ff;
+
+    font-family: "Inter", Arial, sans-serif;
+    font-size: 14px;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.cataloguer-form input::placeholder,
+.cataloguer-form textarea::placeholder {
+    color: #6f7d91;
+}
+
+.cataloguer-form input:focus,
+.cataloguer-form select:focus,
+.cataloguer-form textarea:focus {
+    outline: none;
+
+    border-color: #3b82f6;
+
+    box-shadow:
+        0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.cataloguer-form select option {
+    background: #0c1628;
+    color: #ffffff;
+}
+
+.cataloguer-form textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+
+/* =========================================================
+   DESCRIPTION LABEL
+   ========================================================= */
+
+.description-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 7px;
+}
+
+.description-label label {
+    margin-bottom: 0;
+}
+
+.description-label span {
+    color: #4b8df8;
+
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .6px;
+}
+
+
+/* =========================================================
+   ACTION BUTTONS
+   ========================================================= */
+
+.cataloguer-actions {
+    display: grid;
+
+    grid-template-columns: 1fr 1.5fr;
+
+    gap: 12px;
+}
+
+.cataloguer-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    padding: 12px;
+
+    border: 0;
+    border-radius: 8px;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.voice-btn {
+    background: #263b5d;
+    color: #ffffff;
+}
+
+.voice-btn:hover {
+    background: #304b73;
+}
+
+.ai-btn {
+    background: #3b82f6;
+    color: #ffffff;
+}
+
+.ai-btn:hover {
+    background: #2563eb;
+}
+
+
+/* =========================================================
+   PUBLISH BUTTON
+   ========================================================= */
+
+.publish-product-btn {
+    width: 100%;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    padding: 14px;
+
+    border: 0;
+    border-radius: 8px;
+
+    background: #f15a3c;
+    color: #ffffff;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: background 0.2s ease;
+}
+
+.publish-product-btn:hover {
+    background: #e24d30;
+}
+
+
+/* =========================================================
+   AI INFORMATION CARD
+   ========================================================= */
+
+.cataloguer-info-card {
+    padding: 30px;
+
+    background: #142139;
+    border: 1px solid #2a3a55;
+    border-radius: 14px;
+
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.22);
+}
+
+.ai-orb {
+    width: 52px;
+    height: 52px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 18px;
+
+    border-radius: 13px;
+
+    background: #1c3152;
+    color: #4b8df8;
+
+    font-size: 20px;
+}
+
+.ai-panel-tag {
+    color: #4b8df8;
+
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+}
+
+.cataloguer-info-card h3 {
+    margin: 12px 0;
+
+    color: #ffffff;
+
+    font-size: 24px;
+    line-height: 1.3;
+}
+
+.cataloguer-info-card > p {
+    margin: 0;
+
+    color: #aeb9cc;
+
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.ai-feature-list {
+    display: flex;
+    flex-direction: column;
+
+    gap: 18px;
+
+    margin-top: 26px;
+}
+
+.ai-feature-list > div {
+    display: flex;
+    align-items: flex-start;
+
+    gap: 12px;
+}
+
+.ai-feature-list > div > i {
+    flex-shrink: 0;
+
+    margin-top: 3px;
+
+    color: #4b8df8;
+}
+
+.ai-feature-list strong {
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: #ffffff;
+    font-size: 14px;
+}
+
+.ai-feature-list span {
+    display: block;
+
+    color: #8795aa;
+
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+footer {
+    padding: 25px;
+
+    background: #080f1d;
+
+    border-top: 1px solid #263650;
+
+    text-align: center;
+}
+
+footer p {
+    margin: 0;
+
+    color: #8795aa;
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   HIDDEN
+   ========================================================= */
+
+.hidden {
+    display: none !important;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .artisan-feature-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .cataloguer-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+@media (max-width: 650px) {
+
+    .navbar {
+        padding: 12px 20px;
+    }
+
+    .nav-links {
+        gap: 8px;
+    }
+
+    .nav-item {
+        display: none;
+    }
+
+    .artisan-feature-grid,
+    .form-row,
+    .cataloguer-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .artisan-portal-hero {
+        padding: 55px 25px;
+    }
+
+    .artisan-portal-hero h1 {
+        font-size: 40px;
+    }
+
+    .artisan-portal-section {
+        width: 92%;
+        padding: 50px 0 70px;
+    }
+
+    .cataloguer-wrapper {
+        width: 92%;
+    }
+
+    .cataloguer-heading {
+        flex-direction: column;
+    }
+
+    .cataloguer-heading h2 {
+        font-size: 31px;
+    }
+
+    .cataloguer-card,
+    .cataloguer-info-card {
+        padding: 22px;
+    }
+}
+/* =========================================================
+   FIX SMART AI CATALOGUER - HORIZONTAL LAYOUT
+   ========================================================= */
+
+.artisan-cataloguer-section {
+    width: 100%;
+}
+
+.cataloguer-wrapper {
+    width: 90%;
+    max-width: 1150px;
+    margin: 0 auto;
+}
+
+/* Make the cataloguer use the full available width */
+.cataloguer-layout {
+    display: block;
+    width: 100%;
+}
+
+/* Wide main cataloguer card */
+.cataloguer-card {
+    width: 100%;
+}
+
+/* Hide the secondary information panel so the cataloguer
+   matches the earlier wide design */
+.cataloguer-info-card {
+    display: none;
+}
+
+/* ---------------------------------------------------------
+   FORM: 2 COLUMN HORIZONTAL LAYOUT
+   --------------------------------------------------------- */
+
+.cataloguer-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 24px;
+    row-gap: 22px;
+}
+
+/* Let the existing category/price wrapper disappear
+   into the main grid */
+.cataloguer-form .form-row {
+    display: contents;
+}
+
+/* Product Title = left column */
+.cataloguer-form .form-group:nth-child(1) {
+    grid-column: 1;
+}
+
+/* Category = right column */
+.cataloguer-form .form-row .form-group:nth-child(1) {
+    grid-column: 2;
+}
+
+/* Price = left column */
+.cataloguer-form .form-row .form-group:nth-child(2) {
+    grid-column: 1;
+}
+
+/* Product Images = right column */
+.cataloguer-form .form-group:nth-child(3) {
+    grid-column: 2;
+}
+
+/* Description = full width */
+.cataloguer-form .form-group:nth-child(4) {
+    grid-column: 1 / -1;
+}
+
+/* Buttons = full width */
+.cataloguer-actions {
+    grid-column: 1 / -1;
+}
+
+/* Publish = full width */
+.publish-product-btn {
+    grid-column: 1 / -1;
+}
+
+
+/* =========================================================
+   MATCH THE OLD WIDE FORM PROPORTIONS
+   ========================================================= */
+
+.cataloguer-card {
+    padding: 30px 40px;
+}
+
+.cataloguer-form input,
+.cataloguer-form select,
+.cataloguer-form textarea {
+    min-height: 47px;
+}
+
+.cataloguer-form textarea {
+    min-height: 115px;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .cataloguer-form {
+        grid-template-columns: 1fr;
+    }
+
+    .cataloguer-form .form-group,
+    .cataloguer-form .form-row .form-group,
+    .cataloguer-actions,
+    .publish-product-btn {
+        grid-column: 1 / -1;
+    }
+
+    .cataloguer-card {
+        padding: 22px;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+    <!-- =========================================
+         ARTISAN PORTAL HEADER
+         ========================================= -->
+
+    <header class="navbar">
+
+        <a href="index.html" class="logo-container" style="text-decoration: none;">
+
+            <img
+                src="assets/logo.png.jpeg"
+                alt="KalaNidhi Logo"
+                class="brand-logo-img"
+            >
+
+            <div class="brand-info">
+                <span class="brand-title">कला NIDHI</span>
+                <p class="brand-tagline">
+                    Artisan Portal
+                </p>
+            </div>
+
+        </a>
+
+        <nav class="nav-links">
+
+            <a href="index.html" class="nav-item">
+                <i class="fa-solid fa-house"></i>
+                Marketplace
+            </a>
+
+            <button
+                class="btn-logout"
+                onclick="logoutArtisan()"
+            >
+                <i class="fa-solid fa-right-from-bracket"></i>
+                Logout
+            </button>
+
+        </nav>
+
+    </header>
+
+
+    <!-- =========================================
+         ARTISAN PORTAL HERO
+         ========================================= -->
+
+    <section class="artisan-portal-hero">
+
+        <div class="artisan-portal-content">
+
+            <span class="artisan-portal-badge">
+                <i class="fa-solid fa-palette"></i>
+                KALANIDHI ARTISAN PORTAL
+            </span>
+
+            <h1>
+                Your Craft.
+                <span>Your Digital Workspace.</span>
+            </h1>
+
+            <p>
+                Create your products, manage your craft business,
+                and access the materials you need — all from one place.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================
+         ARTISAN WELCOME
+         ========================================= -->
+
+    <section class="artisan-portal-section">
+
+        <div class="artisan-welcome">
+
+            <div>
+                <span class="section-tag">
+                    ARTISAN WORKSPACE
+                </span>
+
+                <h2>
+                    Welcome, <span id="artisanName">Artisan</span> 👋
+                </h2>
+
+                <p>
+                    Everything you need to create, manage and grow
+                    your craft business on KalaNidhi.
+                </p>
+            </div>
+
+        </div>
+
+
+        <!-- =====================================
+             MAIN ARTISAN FEATURES
+             ===================================== -->
+
+        <div class="artisan-feature-grid">
+
+            <!-- AI CATALOGUER -->
+
+            <div class="artisan-feature-card cataloguer-feature">
+
+                <div class="feature-icon">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </div>
+
+                <span class="feature-label">
+                    CREATE
+                </span>
+
+                <h3>
+                    AI Cataloguer
+                </h3>
+
+                <p>
+                    Create professional product listings with
+                    AI-powered descriptions and voice assistance.
+                </p>
+
+                <button
+                    class="artisan-feature-btn"
+                    onclick="openCataloguer()"
+                >
+                    <i class="fa-solid fa-plus"></i>
+                    Create Product
+                </button>
+
+            </div>
+
+
+            <!-- ARTISAN STORE -->
+
+            <div class="artisan-feature-card store-feature">
+
+                <div class="new-feature-badge">
+                    <i class="fa-solid fa-star"></i>
+                    NEW FEATURE
+                </div>
+
+                <div class="feature-icon store-icon">
+                    <i class="fa-solid fa-store"></i>
+                </div>
+
+                <span class="feature-label">
+                    SOURCE
+                </span>
+
+                <h3>
+                    Artisan Store
+                </h3>
+
+                <p>
+                    Buy raw materials, tools and supplies needed
+                    to create your next masterpiece.
+                </p>
+
+                <a
+                    href="artisan_store.html"
+                    class="artisan-feature-btn store-btn"
+                >
+                    <i class="fa-solid fa-arrow-right"></i>
+                    Explore Artisan Store
+                </a>
+
+            </div>
+
+
+            <!-- MY PRODUCTS -->
+
+            <div class="artisan-feature-card">
+
+                <div class="feature-icon">
+                    <i class="fa-solid fa-box-open"></i>
+                </div>
+
+                <span class="feature-label">
+                    MANAGE
+                </span>
+
+                <h3>
+                    My Products
+                </h3>
+
+                <p>
+                    View and manage the handmade products
+                    you have published on KalaNidhi.
+                </p>
+
+                <button
+                    class="artisan-feature-btn"
+                    onclick="openMyProducts()"
+                >
+                    <i class="fa-solid fa-box"></i>
+                    View Products
+                </button>
+
+            </div>
+
+
+            <!-- SALES -->
+
+            <div class="artisan-feature-card">
+
+                <div class="feature-icon">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+
+                <span class="feature-label">
+                    GROW
+                </span>
+
+                <h3>
+                    My Sales
+                </h3>
+
+                <p>
+                    Track your product orders and sales
+                    through your KalaNidhi marketplace.
+                </p>
+
+                <button
+                    class="artisan-feature-btn"
+                    onclick="openSales()"
+                >
+                    <i class="fa-solid fa-arrow-trend-up"></i>
+                    View Sales
+                </button>
+
+            </div>
+
+
+            <!-- PROFILE -->
+
+            <div class="artisan-feature-card">
+
+                <div class="feature-icon">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+
+                <span class="feature-label">
+                    PROFILE
+                </span>
+
+                <h3>
+                    My Artisan Profile
+                </h3>
+
+                <p>
+                    Manage your artisan information, craft story,
+                    specialty and profile details.
+                </p>
+
+                <button
+                    class="artisan-feature-btn"
+                    onclick="openProfile()"
+                >
+                    <i class="fa-solid fa-user-pen"></i>
+                    My Profile
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================
+         AI CATALOGUER AREA
+         ========================================= -->
+
+    <!-- =========================================
+     SMART AI CATALOGUER
+     ========================================= -->
+
+<section
+    class="artisan-cataloguer-section hidden"
+    id="cataloguerSection"
+>
+
+    <div class="cataloguer-container">
+
+        <!-- HEADER -->
+
+        <div class="cataloguer-header">
+
+            <div>
+                <span class="section-tag">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    AI-POWERED CREATION
+                </span>
+
+                <h2>
+                    Smart AI Cataloguer
+                    <span class="badge-seller">
+                        Artisan Tool
+                    </span>
+                </h2>
+
+                <p>
+                    Speak or type your product details and create
+                    an optimized marketplace listing instantly.
+                </p>
+            </div>
+
+            <button
+                type="button"
+                class="cataloguer-close"
+                onclick="document.getElementById('cataloguerSection').classList.add('hidden')"
+                aria-label="Close cataloguer"
+            >
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+        </div>
+
+
+        <!-- MAIN CONTENT -->
+
+        <div class="cataloguer-layout">
+
+
+            <!-- =====================================
+                 LEFT: PRODUCT FORM
+                 ===================================== -->
+
+            <div class="cataloguer-card">
+
+                <div class="cataloguer-card-title">
+                    <span>01</span>
+                    Product Details
+                </div>
+
+
+                <form
+                    id="productForm"
+                    class="cataloguer-form"
+                >
+
+                    <!-- PRODUCT TITLE -->
+
+                    <div class="form-group">
+
+                        <label for="productTitle">
+                            PRODUCT TITLE
+                        </label>
+
+                        <div class="input-icon-wrapper">
+
+                            <input
+                                type="text"
+                                id="productTitle"
+                                placeholder="e.g. Handcrafted Clay Surahi"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                class="voice-input-btn"
+                                onclick="startDictation()"
+                                title="Voice Dictation"
+                            >
+                                <i class="fa-solid fa-microphone"></i>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- CATEGORY + PRICE -->
+
+                    <div class="form-row">
+
+                        <div class="form-group">
+
+                            <label for="productCategory">
+                                CATEGORY
+                            </label>
+
+                            <select
+                                id="productCategory"
+                                required
+                            >
+
+                                <option value="">
+                                    Select category
+                                </option>
+
+                                <option value="Pottery & Ceramics">
+                                    Pottery & Ceramics
+                                </option>
+
+                                <option value="Textiles">
+                                    Textiles
+                                </option>
+
+                                <option value="Bamboo Craft">
+                                    Bamboo Craft
+                                </option>
+
+                                <option value="Metalwork">
+                                    Metalwork
+                                </option>
+
+                                <option value="Woodwork">
+                                    Woodwork
+                                </option>
+
+                                <option value="Jewellery">
+                                    Jewellery
+                                </option>
+
+                                <option value="Painting">
+                                    Painting
+                                </option>
+
+                                <option value="Handicrafts">
+                                    Handicrafts
+                                </option>
+
+                                <option value="Other">
+                                    Other
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="productPrice">
+                                PRICE (₹)
+                            </label>
+
+                            <input
+                                type="number"
+                                id="productPrice"
+                                placeholder="e.g. 850"
+                                min="1"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- PRODUCT IMAGE -->
+
+                    <div class="form-group">
+
+                        <label for="productPhoto">
+                            PRODUCT IMAGES
+                        </label>
+
+                        <input
+                            type="file"
+                            id="productPhoto"
+                            accept="image/png,image/jpeg,image/webp"
+                            multiple
+                            required
+                        >
+
+                        <small class="field-help">
+                            Choose up to 6 images, maximum 5 MB each.
+                        </small>
+
+                    </div>
+
+
+                    <!-- DESCRIPTION -->
+
+                    <div class="form-group">
+
+                        <div class="description-header">
+
+                            <label for="productDescription">
+                                PRODUCT DESCRIPTION
+                            </label>
+
+                            <span>
+                                AI Assisted
+                            </span>
+
+                        </div>
+
+                        <textarea
+                            id="productDescription"
+                            rows="5"
+                            placeholder="Describe your artifact, materials, technique, colours, size, story..."
+                            required
+                        ></textarea>
+
+                    </div>
+
+
+                    <!-- ACTION BUTTONS -->
+
+                    <div class="cataloguer-actions">
+
+                        <button
+                            type="button"
+                            class="cataloguer-action-btn dictate-btn"
+                            onclick="startDictation()"
+                        >
+
+                            <i class="fa-solid fa-microphone"></i>
+
+                            Dictate
+
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="cataloguer-action-btn ai-btn"
+                            onclick="generateProductDescription()"
+                        >
+
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+
+                            Auto-Generate AI Description
+
+                        </button>
+
+                    </div>
+
+
+                    <!-- PUBLISH -->
+
+                    <button
+                        type="submit"
+                        class="publish-product-btn"
+                    >
+
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+
+                        Publish Listing
+
+                    </button>
+
+                </form>
+
+            </div>
+
+
+            
+</section>
+            <!-- RIGHT: AI INFORMATION PANEL -->
+         <!--   <div class="cataloguer-info-card">
+
+                <div class="ai-orb">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </div>
+
+                <span class="ai-panel-tag">
+                    KALANIDHI AI
+                </span>
+
+                <h3>
+                    Your digital assistant
+                    for every product.
+                </h3>
+
+                <p>
+                    You don't need to be an expert writer.
+                    Simply tell us about your craft and we'll help
+                    transform your ideas into a marketplace-ready listing.
+                </p>
+
+
+                <div class="ai-feature-list">
+
+                    <div>
+                        <i class="fa-solid fa-microphone"></i>
+                        <span>
+                            <strong>Voice assistance</strong>
+                            Speak instead of typing.
+                        </span>
+                    </div>
+
+                    <div>
+                        <i class="fa-solid fa-pen-nib"></i>
+                        <span>
+                            <strong>AI description</strong>
+                            Generate a polished product story.
+                        </span>
+                    </div>
+
+                    <div>
+                        <i class="fa-solid fa-store"></i>
+                        <span>
+                            <strong>Marketplace ready</strong>
+                            Publish directly to KalaNidhi.
+                        </span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>-->
+
+
+    <!-- =========================================
+         FOOTER
+         ========================================= -->
+
+    <footer>
+
+        <p>
+            &copy; 2026 KalaNidhi.
+            Built for Smart India Hackathon (SIH 2026).
+        </p>
+
+    </footer>
+
+
+    <!-- =========================================
+         PAGE SCRIPT
+         ========================================= -->
+
+    <script>
+
+        function openCataloguer() {
+            const section = document.getElementById("cataloguerSection");
+
+            section.classList.remove("hidden");
+
+            section.scrollIntoView({
+                behavior: "smooth"
+            });
+        }
+
+        function openMyProducts() {
+            alert("My Products section will be connected next.");
+        }
+
+        function openSales() {
+            alert("My Sales section will be connected next.");
+        }
+
+        function openProfile() {
+            alert("Profile section will be connected next.");
+        }
+
+        async function logoutArtisan() {
+
+            if (window.supabase) {
+
+                const SUPABASE_URL =
+                    'https://gxsoehuxurrztnutzbik.supabase.co';
+
+                const SUPABASE_ANON_KEY =
+                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4c29laHV4dXJyenRudXR6YmlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMDA5MzIsImV4cCI6MjEwNDc3NjkzMn0.IlpPJqBzka-wXT7c7SS3FzqVm80eUgu3tZ9dRlS0m_Q';
+
+                const client =
+                    window.supabase.createClient(
+                        SUPABASE_URL,
+                        SUPABASE_ANON_KEY
+                    );
+
+                await client.auth.signOut();
+            }
+
+            window.location.href = "index.html";
+        }
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raw Materials Supply Hub | KalaNidhi</title>
+    <!-- Google Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Core Styles (Reusing your existing style.css) -->
+    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        /* Scrollable supply order summary */
+#storeOrderSummary {
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 8px;
+}
+
+/* Smooth scrollbar */
+#storeOrderSummary::-webkit-scrollbar {
+    width: 7px;
+}
+
+#storeOrderSummary::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+#storeOrderSummary::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 10px;
+}
+
+#storeOrderSummary::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+        /* Store-Specific Tweaks */
+        body { background-color: var(--bg-light); color: var(--text-dark); background-image: none; }
+        .store-hero { background: linear-gradient(rgba(14, 22, 38, 0.85), rgba(14, 22, 38, 0.9)), url('https://images.unsplash.com/photo-1452860606245-08befc0ff44b?q=80&w=2070') center/cover; padding: 4rem 2rem; text-align: center; color: white; margin-bottom: 3rem; }
+        .store-hero h1 { font-family: 'Playfair Display', serif; font-size: 2.8rem; margin-bottom: 1rem; color: var(--accent-gold); }
+        .store-hero p { font-size: 1.1rem; max-width: 600px; margin: 0 auto; color: #cbd5e1; }
+        
+        .bulk-badge { background: #1e293b; color: var(--accent-cyan); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; border: 1px solid var(--accent-cyan); display: inline-block; margin-bottom: 10px; }
+        
+        /* Floating Cart Button */
+        .floating-cart { position: fixed; bottom: 30px; right: 30px; background-color: var(--accent-coral); color: white; width: 65px; height: 65px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; box-shadow: 0 10px 25px rgba(224, 86, 56, 0.4); cursor: pointer; z-index: 1000; transition: transform 0.2s; border: none; }
+        .floating-cart:hover { transform: scale(1.1); }
+        .cart-badge { position: absolute; top: -5px; right: -5px; background: #1e293b; color: white; font-size: 0.85rem; font-weight: bold; width: 26px; height: 26px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid white; }
+        /* Supply checkout product images */
+#storeOrderSummary .cart-item-img {
+    width: 80px;
+    height: 80px;
+    min-width: 80px;
+    object-fit: contain;
+    object-position: center;
+    border-radius: 10px;
+    background: #f8fafc;
+    padding: 6px;
+    display: block;
+}
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="navbar">
+        <a href="index.html" class="logo-container" style="text-decoration: none;">
+            <img src="assets/logo.png.jpeg" alt="KalaNidhi Logo" class="brand-logo-img" onerror="this.src='https://via.placeholder.com/50'">
+            <div class="brand-info">
+                <span class="brand-title">कला NIDHI</span>
+                <p class="brand-tagline">Artisan Supply Hub</p>
+            </div>
+        </a>
+        <nav class="nav-links">
+            <a href="index.html" class="nav-item"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+        </nav>
+    </header>
+
+    <!-- Store Hero -->
+    <section class="store-hero">
+        <h1>Raw Material Supply Hub</h1>
+        <p>Source high-quality, authentic raw materials directly from verified wholesale suppliers. Built exclusively for KalaNidhi Artisans.</p>
+    </section>
+
+    <!-- Store Main Area -->
+    <div class="marketplace-section" style="padding-top: 0; min-height: auto;">
+        <div class="filter-bar">
+            <div class="search-input-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="storeSearchInput" placeholder="Search materials (e.g., Clay, Yarn)..." onkeyup="renderStore()">
+            </div>
+            <div class="category-select-wrapper">
+                <select id="storeCategoryFilter" onchange="renderStore()">
+                    <option value="All">All Supplies</option>
+                    <option value="Clay & Pottery">Clay & Pottery</option>
+                    <option value="Yarn & Threads">Yarn & Threads</option>
+                    <option value="Tools & Equipment">Tools & Equipment</option>
+                    <option value="Wood & Bamboo">Wood & Bamboo</option>
+                    <option value="Dyes & Colors">Dyes & Colors</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="product-grid" id="storeGrid" style="margin-top: 3rem;">
+            <!-- Products injected by JS -->
+        </div>
+    </div>
+
+    <!-- Floating Cart Button -->
+    <button class="floating-cart" onclick="openStoreCheckout()">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span class="cart-badge" id="floatingCartCount">0</span>
+    </button>
+
+    <!-- B2B Checkout Modal -->
+    <div class="modal-overlay hidden" id="storeCheckoutModal">
+        <div class="modal-card checkout-modal-card" style="max-width: 900px;">
+            <button class="modal-close" onclick="closeStoreCheckout()">&times;</button>
+            <h2>Wholesale Order Summary</h2>
+            
+            <div class="checkout-layout">
+                <div class="checkout-left">
+                    <h3>Supplies in Cart</h3>
+                    <div class="order-summary" id="storeOrderSummary"></div>
+                </div>
+                
+                <div class="checkout-right">
+                    <div class="discount-banner hidden" id="bulkDiscountBanner" style="background: rgba(245, 158, 11, 0.15); color: #d97706; border-color: #f59e0b;">
+                        <i class="fa-solid fa-truck-fast"></i> Wholesale Bulk Discount (10%) Applied!
+                    </div>
+                    
+                    <div class="price-breakdown">
+                        <div class="price-row"><span>Subtotal</span> <span id="storeSubtotal">₹0.00</span></div>
+                        <div class="price-row discount-row hidden" id="storeDiscountRow" style="color: #d97706;">
+                            <span>Bulk Discount</span> <span id="storeDiscount">-₹0.00</span>
+                        </div>
+                        <div class="price-row"><span>Freight Shipping</span> <span>₹250.00</span></div>
+                        <hr class="price-divider">
+                        <div class="price-row total-row"><span>Total Amount</span> <span id="storeTotal">₹0.00</span></div>
+                    </div>
+
+                    <p class="field-help" style="margin-bottom: 15px;">Orders over ₹5,000 automatically receive a 10% wholesale discount.</p>
+
+                    <button class="btn-submit full-btn" onclick="placeStoreOrder()" id="btnPlaceStoreOrder">
+                        <i class="fa-solid fa-box-open"></i> Place Supply Order
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Store Logic Script -->
+    <script>
+        // 1. Realistic Demo Inventory for Artisans
+        const storeProducts = [
+            { id: 's1', title: 'Premium Terracotta Clay (Filter-pressed)', category: 'Clay & Pottery', price: 1200, unit: '50kg Bag', img: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?q=80&w=800', tags: ['clay', 'terracotta', 'raw'] },
+            { id: 's2', title: 'Unbleached Organic Cotton Yarn', category: 'Yarn & Threads', price: 3200, unit: '10kg Bundle', img: 'https://i.etsystatic.com/11605964/r/il/936fcb/3467678592/il_1080xN.3467678592_7o2i.jpg', tags: ['cotton', 'yarn', 'weaving'] },
+            { id: 's3', title: 'Professional Wood Carving Chisel Set', category: 'Tools & Equipment', price: 2500, unit: '12-Piece Set', img: 'https://sitaramstationers.com/wp-content/uploads/2020/04/whatsapp-image-2020-04-29-at-135604.jpeg', tags: ['tools', 'chisels', 'woodwork'] },
+            { id: 's4', title: 'Natural Indigo Dye Powder', category: 'Dyes & Colors', price: 1500, unit: '1kg Packet', img: 'https://s3organicbucket.s3.ap-south-1.amazonaws.com/Products/SATAUSHADH/IndigoPowder_front.png', tags: ['dye', 'indigo', 'color'] },
+            { id: 's5', title: 'Treated Assam Bamboo Poles', category: 'Wood & Bamboo', price: 1800, unit: 'Bundle of 20', img: 'https://cpimg.tistatic.com/10371728/b/4/Treated-Bambo-Pole..jpg', tags: ['bamboo', 'poles', 'cane'] },
+            { id: 's6', title: 'Heavy Duty Potter\'s Wheel (300W)', category: 'Tools & Equipment', price: 14500, unit: '1 Unit', img: 'https://vevor-goods.vevor.net/product/TYLPJ14YCTYLPJ001/pottery-wheel-m100-1.2.jpg', tags: ['wheel', 'equipment', 'pottery'] }
+        ];
+
+        let storeCart = [];
+
+        // 2. Render Grid
+        function renderStore() {
+            const search = document.getElementById('storeSearchInput').value.toLowerCase();
+            const category = document.getElementById('storeCategoryFilter').value;
+            const grid = document.getElementById('storeGrid');
+
+            const filtered = storeProducts.filter(p => {
+                const matchCat = category === 'All' || p.category === category;
+                const matchSearch = p.title.toLowerCase().includes(search) || p.tags.some(t => t.includes(search));
+                return matchCat && matchSearch;
+            });
+
+            if(filtered.length === 0) {
+                grid.innerHTML = '<p class="empty-state" style="grid-column: 1/-1; text-align: center;">No materials found.</p>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map(p => `
+                <div class="product-card" style="display:flex; flex-direction:column;">
+                    <div class="product-img-wrapper">
+                        <img src="${p.img}" class="product-img" alt="${p.title}">
+                    </div>
+                    <div class="product-info" style="flex-grow:1; display:flex; flex-direction:column;">
+                        <span class="bulk-badge">${p.category}</span>
+                        <h3 class="product-title" style="font-size:1.1rem;">${p.title}</h3>
+                        <p style="color:#64748b; font-size:0.85rem; margin-bottom:15px;">Package: <strong>${p.unit}</strong></p>
+                        
+                        <div style="margin-top:auto; display:flex; justify-content:space-between; align-items:center;">
+                            <span class="product-price">₹${p.price}</span>
+                            <button class="btn-primary" style="padding: 6px 12px; font-size:0.85rem;" onclick="addToStoreCart('${p.id}')">
+                                <i class="fa-solid fa-plus"></i> Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 3. Cart Logic
+        function addToStoreCart(id) {
+            const product = storeProducts.find(p => p.id === id);
+            const existing = storeCart.find(item => item.id === id);
+            
+            if (existing) {
+                existing.quantity++;
+            } else {
+                storeCart.push({ ...product, quantity: 1 });
+            }
+            
+            updateCartBadge();
+            
+            // Temporary Toast Feedback
+            const btn = event.currentTarget;
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> Added';
+            btn.style.backgroundColor = '#10b981';
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.style.backgroundColor = '';
+            }, 1000);
+        }
+
+        function updateCartBadge() {
+            const count = storeCart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('floatingCartCount').innerText = count;
+        }
+
+        function removeStoreItem(id) {
+            storeCart = storeCart.filter(item => item.id !== id);
+            updateCartBadge();
+            renderCheckout();
+        }
+
+        function modifyQuantity(id, delta) {
+            const item = storeCart.find(item => item.id === id);
+            if(item) {
+                item.quantity += delta;
+                if(item.quantity <= 0) removeStoreItem(id);
+                else {
+                    updateCartBadge();
+                    renderCheckout();
+                }
+            }
+        }
+
+        // 4. Checkout Logic
+        function openStoreCheckout() {
+            if(storeCart.length === 0) {
+                alert('Your supply cart is empty.');
+                return;
+            }
+            document.getElementById('storeCheckoutModal').classList.remove('hidden');
+            renderCheckout();
+        }
+
+        function closeStoreCheckout() {
+            document.getElementById('storeCheckoutModal').classList.add('hidden');
+        }
+
+        function renderCheckout() {
+            const summary = document.getElementById('storeOrderSummary');
+            
+            if(storeCart.length === 0) {
+                closeStoreCheckout();
+                return;
+            }
+
+            summary.innerHTML = storeCart.map(item => `
+                <div class="cart-item">
+                    <img src="${item.img}" class="cart-item-img" alt="${item.title}">
+                    <div class="cart-item-details">
+                        <div class="cart-item-title">${item.title}</div>
+                        <div class="cart-item-price">₹${item.price} <span style="color:#64748b; font-size:0.8rem;">/ ${item.unit}</span></div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <button style="border:1px solid #cbd5e1; padding:2px 8px; border-radius:4px; background:white; cursor:pointer;" onclick="modifyQuantity('${item.id}', -1)">-</button>
+                        <span style="font-weight:bold;">${item.quantity}</span>
+                        <button style="border:1px solid #cbd5e1; padding:2px 8px; border-radius:4px; background:white; cursor:pointer;" onclick="modifyQuantity('${item.id}', 1)">+</button>
+                    </div>
+                </div>
+            `).join('');
+
+            const subtotal = storeCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const shipping = 250; // Flat freight rate
+            
+            // BULK DISCOUNT: 10% off orders over 5000
+            let discount = 0;
+            if(subtotal >= 5000) {
+                discount = subtotal * 0.10;
+                document.getElementById('bulkDiscountBanner').classList.remove('hidden');
+                document.getElementById('storeDiscountRow').classList.remove('hidden');
+            } else {
+                document.getElementById('bulkDiscountBanner').classList.add('hidden');
+                document.getElementById('storeDiscountRow').classList.add('hidden');
+            }
+
+            const total = (subtotal - discount) + shipping;
+
+            document.getElementById('storeSubtotal').innerText = `₹${subtotal.toFixed(2)}`;
+            document.getElementById('storeDiscount').innerText = `-₹${discount.toFixed(2)}`;
+            document.getElementById('storeTotal').innerText = `₹${total.toFixed(2)}`;
+        }
+
+        function placeStoreOrder() {
+            const btn = document.getElementById('btnPlaceStoreOrder');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+            
+            setTimeout(() => {
+                alert('Success! Your bulk materials have been ordered and will be delivered to your registered workshop address.');
+                storeCart = [];
+                updateCartBadge();
+                closeStoreCheckout();
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-box-open"></i> Place Supply Order';
+            }, 1500);
+        }
+
+        // Initialize on load
+        window.onload = renderStore;
+    </script>
+</body>
+</html>
